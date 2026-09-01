@@ -1,185 +1,299 @@
-# Redesign funcional 310826
+# Rediseño funcional PEDIDOS — 31/08/2026
 
-## Estado y alcance
+## Estado del documento
 
-Esta especificación inicia el rediseño funcional basado en `Form modificaciones 310826.pdf`.
+Especificación funcional cerrada el 2026-09-01 para implementación futura en WeWeb.
 
-- Rama de trabajo: `redesign-310826`.
-- Snapshot estable previo: commit `50d6de10d23b83419bd60764820506ee5db90e58`.
-- Tag preservado: `pre-redesign-2026-09-01`.
-- Estado en WeWeb: no implementado.
+Todavía no implementada en WeWeb.
 
-El objetivo es simplificar fuertemente la experiencia del solicitante sin perder las capacidades técnicas existentes: persistencia atómica, numeración correlativa, idempotencia, archivos privados, gestión independiente y compatibilidad histórica.
+La rama de trabajo documental es `redesign-310826`. Este documento define el comportamiento objetivo sin modificar la implementación actual, los datos históricos ni Production.
 
-## Áreas públicas previstas
+## Principios generales
 
-La solicitud pública mostrará cuatro áreas principales:
+- WeWeb continúa siendo la plataforma full-stack principal.
+- El formulario público permanece accesible sin autenticación.
+- Una solicitud puede incluir varias áreas y varias piezas o servicios.
+- Cada pieza o servicio seleccionado genera un PED independiente.
+- No se eliminan, renombran ni migran registros históricos como parte de este rediseño.
+- No se transforman pedidos históricos de Fotografía o Audiovisual en Cobertura de eventos.
+- Los adjuntos enviados por el solicitante continúan previstos en WeWeb Storage Private.
+- El producto final se entrega mediante una URL HTTPS externa y no se almacena en WeWeb Storage.
+- Resend será el proveedor futuro de correo, pero su configuración no forma parte de esta especificación documental.
+
+## Flujo público
+
+El flujo público se simplifica a tres pasos:
+
+1. Datos del solicitante y selección de áreas.
+2. Formularios correspondientes únicamente a las áreas y piezas seleccionadas.
+3. Revisión final agrupada antes del envío.
+
+Después de una creación exitosa, el resultado debe mostrar un bloque o tarjeta independiente por cada PED generado.
+
+### Datos obligatorios del solicitante
+
+- Nombre y apellido.
+- Teléfono.
+- Correo electrónico.
+- Área o dependencia.
+
+Estos datos son generales para la solicitud y no deben duplicarse dentro de cada servicio.
+
+## Áreas públicas
+
+El formulario público muestra exactamente estas cuatro áreas:
 
 1. Diseño gráfico.
 2. Cobertura de eventos.
 3. Gacetilla.
 4. Publicaciones en redes sociales.
 
-El solicitante podrá seleccionar una, varias o todas. La multiselección de áreas continúa siendo una capacidad obligatoria.
+Se conserva la selección múltiple de áreas.
+
+### Compatibilidad con el catálogo histórico
+
+- Fotografía y Audiovisual dejan de mostrarse como áreas públicas independientes y son reemplazadas funcionalmente por Cobertura de eventos.
+- Prensa / Difusión deja de mostrarse como área pública y es reemplazada funcionalmente por Gacetilla.
+- Los registros históricos no se eliminan ni se reconvierten.
+- La implementación futura deberá resolver esta presentación sin romper relaciones ni trazabilidad existentes.
 
 ## Diseño gráfico
 
-Diseño gráfico se simplificará visualmente a cuatro piezas:
+El área permite seleccionar una o varias piezas. Las únicas piezas públicas son:
 
 - Flyers.
 - Invitación.
 - Certificado.
 - Otros.
 
-Se conservará la selección múltiple de piezas. Si una solicitud incluye las cuatro opciones, generará cuatro unidades de trabajo y cuatro PED independientes.
+Cada pieza seleccionada genera un PED independiente y conserva estado, responsable, observaciones, archivos, trazabilidad y producto final propios.
 
-Las piezas históricas de Diseño gráfico no se eliminarán de la base en esta etapa. Antes de implementar se definirá cuáles pasarán a estar inactivas para nuevas solicitudes, preservando siempre los registros históricos.
+### Flyers
+
+Campos:
+
+- Fecha de la actividad o de la pieza: obligatoria.
+- Título: obligatorio.
+- Especificaciones o detalle: obligatorio.
+- Logos o imágenes de referencia: adjunto opcional.
+- Enlace de referencia: opcional.
+
+Validación de fecha:
+
+- Zona horaria: Ushuaia.
+- La fecha debe ser posterior al día actual.
+
+### Invitación
+
+Campos:
+
+- Fecha de la actividad: obligatoria.
+- Especificaciones o detalle: obligatorio.
+- Archivo de referencia: opcional.
+
+Validación de fecha:
+
+- Zona horaria: Ushuaia.
+- La fecha debe ser igual o posterior al día actual.
+
+Los campos públicos anteriores que no figuran en esta lista se eliminan del formulario rediseñado. Invitación digital e invitación impresa pueden conservarse históricamente en el catálogo, pero la experiencia pública presenta una única pieza llamada Invitación.
+
+### Certificado
+
+Campos:
+
+- Especificaciones o detalle: obligatorio.
+- Archivo de referencia: opcional.
+
+Los campos públicos específicos anteriores que no figuran en esta lista se eliminan del formulario rediseñado.
+
+### Otros
+
+Campos:
+
+- Especificaciones o detalle: obligatorio.
+- Archivo de referencia: opcional.
+
+Es una solicitud libre y simple. No posee selector de subtipo.
 
 ## Cobertura de eventos
 
-Cobertura de eventos reemplazará en la experiencia pública a Fotografía y Audiovisual. Esas áreas no deberán seguir apareciendo al solicitante como opciones independientes.
+Cobertura de eventos reemplaza en la experiencia pública a las áreas separadas de Fotografía y Audiovisual.
 
-El flujo contempla conceptualmente:
+Campos:
 
-- Descripción del evento.
-- Autoridades asistentes o quiénes participan.
-- Lugar.
-- Fecha.
-- Hora.
+- Descripción de la cobertura: obligatoria.
+- ¿Participan autoridades?: selección Sí/No obligatoria.
+- Autoridades participantes: obligatorio solamente cuando la respuesta anterior es Sí.
+- Fecha: obligatoria.
+- Hora de inicio: obligatoria.
+- Hora de finalización: opcional.
+- Lugar: obligatorio.
+- Ciudad: obligatoria.
 
-Los campos, obligatoriedad, adjuntos y reglas de validación se cerrarán antes de implementar.
+Validaciones:
+
+- Zona horaria: Ushuaia.
+- La fecha debe ser igual o posterior al día actual.
+- Las horas utilizan formato `HH:mm`.
+- Si se informa una hora de finalización, debe ser posterior a la hora de inicio.
 
 ## Gacetilla
 
-Gacetilla reemplazará a Prensa / Difusión como opción pública visible.
+Gacetilla reemplaza en la experiencia pública a Prensa / Difusión.
 
-El flujo contempla conceptualmente:
+Campos:
 
-- Archivo.
-- Contacto para notas.
-- Nombre y apellido.
-- WhatsApp.
+- Archivo base o material para la gacetilla: opcional.
+- Aclaración: opcional.
+- Nombre del contacto: obligatorio.
+- WhatsApp del contacto: obligatorio.
+- Información adicional: opcional.
 
-Los campos exactos, formatos y reglas se cerrarán antes de implementar.
+El archivo es explícitamente opcional; su ausencia no bloquea el envío.
 
 ## Publicaciones en redes sociales
 
-Publicaciones en redes sociales permanecerá como área visible, con un formulario considerablemente más simple.
+Se elimina el selector de formato Foto / Placa / Reel. El pedido describe el contenido a publicar sin elegir ese subtipo.
 
-La referencia funcional contempla:
+La interfaz debe comunicar estas pautas:
 
-- Archivo y/o enlace del copy.
-- Información necesaria para la publicación.
-- Recordatorios operativos.
-- Tiempos de publicación.
+- Incluir el texto completo que se desea publicar.
+- Responder con claridad qué sucede, cómo, cuándo y dónde.
+- Utilizar textos simples y breves.
+- Se recomienda una extensión aproximada de 300 a 500 caracteres.
+- El contenido recibido después de las 18:00 puede programarse para el siguiente día hábil o según disponibilidad del equipo.
 
-No se implementará hasta definir campos, obligatoriedad, formatos y validaciones exactas.
+Campos:
 
-## Datos generales del solicitante
+- Fecha de publicación: obligatoria.
+- Copy o texto completo: obligatorio.
+- Enlace de referencia: opcional.
+- Archivo: opcional.
 
-Se mantienen:
+Validación de fecha:
 
-- Nombre y apellido.
-- Teléfono.
-- Correo electrónico.
-- Área o dependencia solicitante.
+- Zona horaria: Ushuaia.
+- La fecha debe ser igual o posterior al día actual.
 
-El solicitante no deberá autenticarse. El formulario continuará siendo público.
+## Regla de tickets
 
-## Regla definitiva de tickets
+La unidad operativa es el servicio o la pieza:
 
-La regla funcional y técnica continúa siendo:
+`1 servicio o pieza = 1 PED`
 
-> Un servicio o pieza solicitada genera un ticket/PED independiente.
+Aunque el usuario complete una única experiencia de solicitud con selección múltiple, el backend debe generar un PED independiente por cada servicio o pieza. Cada PED tiene de manera independiente:
 
-No se volverá a un PED por envío ni a un PED por área.
+- estado;
+- responsable;
+- observaciones internas;
+- archivos y referencias;
+- trazabilidad;
+- producto final.
 
-Cada PED mantendrá independientemente:
+La revisión final y el resultado deben agrupar visualmente los PED originados en una misma carga sin fusionar su gestión.
 
-- Estado.
-- Responsable.
-- Observaciones.
-- Archivos.
-- Trazabilidad.
+## Estados y comunicaciones por correo
 
-La numeración continuará con el formato `PED-AAAA-NNNNNN`. Un mismo envío podrá contener múltiples áreas y múltiples servicios o piezas dentro de cada área.
+Resend será el proveedor futuro. No se configura en esta etapa.
 
-## Panel interno
+Los únicos estados que generan correo al solicitante son:
 
-El modelo conceptual permanece:
+- Nuevo / Ingresado.
+- En revisión.
+- En proceso.
+- Finalizado.
+- Cancelado.
 
-> Una fila = un PED = un trabajo.
+Los demás estados son internos y no generan correo. En particular, Asignado es un estado o evento interno.
 
-Cada ticket podrá abrirse, asignarse, cambiar de estado, registrar observaciones y gestionar archivos de forma independiente.
+### Solicitar información faltante
 
-El panel interno no se rediseñará hasta cerrar el nuevo flujo público.
+El panel interno incorporará una acción independiente llamada `Solicitar información faltante`.
 
-## Notificaciones futuras con Resend
-
-Resend es el proveedor previsto para notificaciones por email. No está configurado todavía y no se almacenan claves en este repositorio.
-
-Se prevén notificaciones al correo del solicitante cuando el ticket:
-
-- Ingresa.
-- Pasa a En revisión.
-- Pasa a En proceso.
-- Pasa a Esperando información.
-- Pasa a Correcciones.
-- Pasa a Finalizado.
-- Pasa a Cancelado.
-
-`Asignado` podrá permanecer como evento interno salvo decisión posterior. La futura API key deberá guardarse como variable segura del Backend.
+- No cambia automáticamente el estado del PED.
+- El operador escribe el mensaje que se enviará.
+- El correo se enviará mediante Resend.
+- El estado actual se conserva, salvo que el operador lo cambie manualmente por otra acción.
+- La acción puede repetirse cuantas veces sea necesario.
+- Cada envío debe quedar registrado para trazabilidad.
 
 ## Producto final
 
-Cuando un ticket pase a `Finalizado`, el solicitante deberá poder acceder al producto terminado.
+El producto final no se carga en WeWeb Storage.
 
-La preferencia técnica es:
+El equipo interno informa una URL HTTPS externa, por ejemplo de Drive, Dropbox u otro proveedor, y puede agregar una nota opcional. Se prevén estos campos en el servicio o ticket:
 
-- Archivo en Storage Private.
-- Acceso seguro y temporal.
-- Sin exponer `storage_path`.
-- Sin adjuntar archivos pesados directamente al email.
+- `producto_final_url`.
+- `producto_final_nota`.
 
-La autorización, duración y mecanismo definitivo se cerrarán antes de implementar.
+Ambos son de uso interno y no forman parte de los datos originales del solicitante.
+
+Al pasar un PED a Finalizado, el correo debe incluir el enlace externo y, cuando exista, la nota. La disponibilidad y seguridad del archivo dependen de los permisos configurados en el proveedor externo.
+
+## Registro futuro de comunicaciones
+
+Se propone crear en una fase futura la tabla `comunicaciones_pedido`. Esta especificación no autoriza su creación.
+
+Campos previstos:
+
+- pedido;
+- servicio;
+- tipo de comunicación;
+- estado relacionado, opcional;
+- destinatario;
+- asunto;
+- resultado;
+- identificador del mensaje del proveedor, opcional;
+- error, opcional;
+- fecha y hora.
+
+Tipos de comunicación previstos:
+
+- `pedido_ingresado`;
+- `cambio_estado`;
+- `informacion_faltante`;
+- `finalizado`;
+- `cancelado`.
 
 ## Seguimiento público futuro
 
-Se prevé una página pública `/seguimiento`, sin login.
+Se prevé una página pública `/seguimiento` con consulta mediante:
 
-La consulta exigirá conjuntamente:
+- número PED;
+- correo electrónico del solicitante.
 
-- Número de ticket/PED.
-- Correo electrónico utilizado en la solicitud.
+El PED por sí solo no es suficiente para consultar información.
 
-El Backend deberá validar ambos valores antes de devolver información. No será suficiente conocer únicamente el PED secuencial.
+La respuesta puede mostrar exclusivamente:
 
-Información pública prevista:
+- número PED;
+- pieza o servicio;
+- estado;
+- fecha de creación;
+- fecha de última actualización.
 
-- PED.
-- Servicio o pieza.
-- Estado actual.
-- Fecha de ingreso.
-- Última actualización.
+No debe exponer:
 
-No se devolverán:
+- UUID internos;
+- responsable interno;
+- observaciones internas;
+- rutas de Storage;
+- otros pedidos del mismo solicitante.
 
-- Observaciones internas.
-- Responsable interno, salvo decisión posterior.
-- UUID.
-- `storage_path`.
-- Información de otros pedidos.
+La exposición del enlace al producto final en esta pantalla queda como una decisión de implementación posterior.
 
-Para entregar el producto final se evaluará una protección adicional mediante token seguro.
+## Alcance técnico preservado
 
-## Decisiones pendientes antes de implementar
+- Se reutiliza la arquitectura actual de WeWeb siempre que sea compatible con esta especificación.
+- Los adjuntos originales del solicitante continúan utilizando Storage Private y acceso controlado.
+- El producto final utiliza exclusivamente una URL HTTPS externa.
+- Se conserva la selección múltiple y la creación independiente de PED por servicio o pieza.
+- No se borran ni renumeran pedidos.
+- No se alteran datos históricos ni catálogos históricos de forma destructiva.
+- No se realiza una migración automática de Fotografía o Audiovisual hacia Cobertura de eventos.
+- No se implementan en esta etapa Resend, la tabla de comunicaciones, `/seguimiento` ni cambios en WeWeb.
 
-- Campos exactos y obligatoriedad de Cobertura de eventos.
-- Campos exactos y obligatoriedad de Gacetilla.
-- Simplificación exacta de Publicaciones en redes sociales.
-- Tratamiento público de los servicios históricos de Diseño gráfico.
-- Reglas de adjuntos y validaciones de cada flujo.
-- Mecanismo seguro de entrega del producto final.
-- Contrato y protección del endpoint de seguimiento.
+## Cierre
 
-Hasta cerrar estas decisiones no debe modificarse WeWeb para implementar el rediseño.
+Este documento cierra la definición funcional del rediseño `310826`. La implementación deberá ejecutarse en fases posteriores, con autorización específica y validación separada para Editor y Production.

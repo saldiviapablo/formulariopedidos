@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-09-01 — Especificación funcional redesign 310826 cerrada
+
+Se cerró la especificación funcional del nuevo flujo público y su gestión futura. Todavía no implementada en WeWeb.
+
+- Se definieron los datos obligatorios del solicitante y el flujo público de tres pasos.
+- Se establecieron las cuatro áreas públicas: Diseño gráfico, Cobertura de eventos, Gacetilla y Publicaciones en redes sociales.
+- Se detallaron campos, opcionalidad y validaciones para cada pieza o servicio.
+- Se confirmó la regla `1 servicio o pieza = 1 PED` con selección múltiple.
+- Se delimitaron los estados que generarán correos mediante Resend y la acción independiente para solicitar información faltante.
+- Se definió la entrega del producto final mediante URL HTTPS externa, fuera de WeWeb Storage.
+- Se documentaron la futura tabla `comunicaciones_pedido` y la futura página `/seguimiento` con validación PED + correo electrónico.
+- Se preservaron la arquitectura compatible y todos los datos históricos, sin migraciones destructivas.
+
 ## 2026-09-01 — Inicio redesign 310826
 
 Se preservó el snapshot funcional previo en `main` y en el tag `pre-redesign-2026-09-01`.
