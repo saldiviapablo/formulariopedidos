@@ -1,0 +1,924 @@
+{
+  "snapshot": "2026-09-01-pre-redesign",
+  "generatedAt": "2026-09-01",
+  "source": "WeWeb MCP (read-only)",
+  "workspace": "Drive Gobierno's workspace",
+  "project": "My project",
+  "projectId": "5791a02a-c0b8-49dc-a5b6-afe5fbb53b60",
+  "environment": "Editor environment",
+  "workflows": [
+    {
+      "id": "ec935c4c-4c71-4d1a-9ea5-fecc8b908312",
+      "name": "api_actualizar_servicio",
+      "type": "api",
+      "description": "Actualiza exclusivamente estado, responsable y observaciones internas de un servicio, valida responsables internos y refresca updatedAt; acceso restringido al equipo interno.",
+      "parameters": [
+        {
+          "key": "payload",
+          "name": "payload",
+          "type": "object"
+        }
+      ],
+      "meta": {
+        "path": "/servicios/actualizar",
+        "method": "PATCH",
+        "security": {
+          "accessRule": "authenticated",
+          "accessRoles": [
+            "equipo_interno",
+            "admin"
+          ],
+          "accessMiddlewares": [],
+          "accessRolesCondition": "OR"
+        }
+      },
+      "firstAction": "TRY_UPDATE",
+      "firstErrorAction": null,
+      "actions": {
+        "SQL_UPDATE": {
+          "id": "SQL_UPDATE",
+          "name": "Validar y actualizar servicio",
+          "next": "RETURN_UPDATE",
+          "type": "sql-execute",
+          "query": "\nWITH\nraw_input AS (\n  SELECT\n    CAST($payload AS jsonb) AS payload,\n    CAST($auth_user_id AS uuid) AS auth_user_id\n),\ninput AS (\n  SELECT\n    raw_input.payload,\n    raw_input.auth_user_id,\n    CASE\n      WHEN CHAR_LENGTH(COALESCE(raw_input.payload->>'servicio_id', '')) = 36\n        AND COALESCE(raw_input.payload->>'servicio_id', '') ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}'\n      THEN (raw_input.payload->>'servicio_id')::uuid\n      ELSE NULL\n    END AS servicio_id\n  FROM raw_input\n),\nvalidation AS (\n  SELECT\n    CASE\n      WHEN input.auth_user_id IS NULL\n        THEN 'AUTH_REQUIRED'\n      WHEN jsonb_typeof(input.payload) <> 'object'\n        THEN 'VALIDATION_ERROR'\n      WHEN EXISTS (\n        SELECT 1\n        FROM jsonb_object_keys(input.payload) AS key_name\n        WHERE key_name NOT IN (\n          'servicio_id',\n          'estado',\n          'responsable_id',\n          'observaciones_internas'\n        )\n      )\n        THEN 'FORBIDDEN_FIELDS'\n      WHEN input.servicio_id IS NULL\n        THEN 'VALIDATION_ERROR'\n      WHEN NOT (\n        input.payload ? 'estado'\n        OR input.payload ? 'responsable_id'\n        OR input.payload ? 'observaciones_internas'\n      )\n        THEN 'VALIDATION_ERROR'\n      WHEN input.payload ? 'estado'\n        AND (\n          jsonb_typeof(input.payload->'estado') <> 'string'\n          OR input.payload->>'estado' NOT IN (\n            'Nuevo',\n            'En revisión',\n            'Asignado',\n            'En proceso',\n            'Esperando información',\n            'Correcciones',\n            'Finalizado',\n            'Cancelado'\n          )\n        )\n        THEN 'INVALID_STATUS'\n      WHEN input.payload ? 'responsable_id'\n        AND input.payload->'responsable_id' <> 'null'::jsonb\n        AND (\n          jsonb_typeof(input.payload->'responsable_id') <> 'string'\n          OR CHAR_LENGTH(COALESCE(input.payload->>'responsable_id', '')) <> 36\n          OR COALESCE(input.payload->>'responsable_id', '') !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}'\n        )\n        THEN 'INVALID_RESPONSIBLE'\n      WHEN input.payload ? 'responsable_id'\n        AND input.payload->'responsable_id' <> 'null'::jsonb\n        AND NOT EXISTS (\n          SELECT 1\n          FROM auth.users\n          WHERE id = (input.payload->>'responsable_id')::uuid\n        )\n        THEN 'RESPONSIBLE_NOT_FOUND'\n      WHEN input.payload ? 'responsable_id'\n        AND input.payload->'responsable_id' <> 'null'::jsonb\n        AND NOT EXISTS (\n          SELECT 1\n          FROM auth.users AS responsible_user\n          WHERE responsible_user.id = (input.payload->>'responsable_id')::uuid\n            AND COALESCE(to_jsonb(responsible_user)->'roles', '[]'::jsonb)\n              ?| ARRAY['equipo_interno', 'admin']\n        )\n        THEN 'RESPONSIBLE_FORBIDDEN'\n      WHEN input.payload ? 'observaciones_internas'\n        AND input.payload->'observaciones_internas' <> 'null'::jsonb\n        AND jsonb_typeof(input.payload->'observaciones_internas') <> 'string'\n        THEN 'VALIDATION_ERROR'\n      WHEN NOT EXISTS (\n        SELECT 1\n        FROM public.servicios_solicitados\n        WHERE id = input.servicio_id\n      )\n        THEN 'NOT_FOUND'\n      ELSE NULL\n    END AS code,\n    CASE\n      WHEN input.auth_user_id IS NULL\n        THEN 'Se requiere un usuario autenticado.'\n      WHEN jsonb_typeof(input.payload) <> 'object'\n        THEN 'El payload debe ser un objeto JSON.'\n      WHEN EXISTS (\n        SELECT 1\n        FROM jsonb_object_keys(input.payload) AS key_name\n        WHERE key_name NOT IN (\n          'servicio_id',\n          'estado',\n          'responsable_id',\n          'observaciones_internas'\n        )\n      )\n        THEN 'El payload contiene campos que este endpoint no permite modificar.'\n      WHEN input.servicio_id IS NULL\n        THEN 'servicio_id es obligatorio y debe ser un UUID válido.'\n      WHEN NOT (\n        input.payload ? 'estado'\n        OR input.payload ? 'responsable_id'\n        OR input.payload ? 'observaciones_internas'\n      )\n        THEN 'Debe proporcionarse al menos un campo para actualizar.'\n      WHEN input.payload ? 'estado'\n        AND (\n          jsonb_typeof(input.payload->'estado') <> 'string'\n          OR input.payload->>'estado' NOT IN (\n            'Nuevo',\n            'En revisión',\n            'Asignado',\n            'En proceso',\n            'Esperando información',\n            'Correcciones',\n            'Finalizado',\n            'Cancelado'\n          )\n        )\n        THEN 'El estado indicado no está permitido.'\n      WHEN input.payload ? 'responsable_id'\n        AND input.payload->'responsable_id' <> 'null'::jsonb\n        AND (\n          jsonb_typeof(input.payload->'responsable_id') <> 'string'\n          OR COALESCE(input.payload->>'responsable_id', '') !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}'\n        )\n        THEN 'responsable_id debe ser un UUID válido o null.'\n      WHEN input.payload ? 'responsable_id'\n        AND input.payload->'responsable_id' <> 'null'::jsonb\n        AND NOT EXISTS (\n          SELECT 1\n          FROM auth.users\n          WHERE id = (input.payload->>'responsable_id')::uuid\n        )\n        THEN 'El responsable indicado no existe en WeWeb Auth.'\n      WHEN input.payload ? 'responsable_id'\n        AND input.payload->'responsable_id' <> 'null'::jsonb\n        AND NOT EXISTS (\n          SELECT 1\n          FROM auth.users AS responsible_user\n          WHERE responsible_user.id = (input.payload->>'responsable_id')::uuid\n            AND COALESCE(to_jsonb(responsible_user)->'roles', '[]'::jsonb)\n              ?| ARRAY['equipo_interno', 'admin']\n        )\n        THEN 'El responsable debe tener rol equipo_interno o admin.'\n      WHEN input.payload ? 'observaciones_internas'\n        AND input.payload->'observaciones_internas' <> 'null'::jsonb\n        AND jsonb_typeof(input.payload->'observaciones_internas') <> 'string'\n        THEN 'observaciones_internas debe ser texto o null.'\n      WHEN NOT EXISTS (\n        SELECT 1\n        FROM public.servicios_solicitados\n        WHERE id = input.servicio_id\n      )\n        THEN 'El servicio solicitado no existe.'\n      ELSE NULL\n    END AS message\n  FROM input\n),\nupdated_service AS (\n  UPDATE public.servicios_solicitados AS service\n  SET\n    estado = CASE\n      WHEN input.payload ? 'estado'\n      THEN input.payload->>'estado'\n      ELSE service.estado\n    END,\n    responsable = CASE\n      WHEN input.payload ? 'responsable_id'\n        AND input.payload->'responsable_id' = 'null'::jsonb\n      THEN NULL\n      WHEN input.payload ? 'responsable_id'\n      THEN (input.payload->>'responsable_id')::uuid\n      ELSE service.responsable\n    END,\n    observaciones_internas = CASE\n      WHEN input.payload ? 'observaciones_internas'\n        AND input.payload->'observaciones_internas' = 'null'::jsonb\n      THEN NULL\n      WHEN input.payload ? 'observaciones_internas'\n      THEN input.payload->>'observaciones_internas'\n      ELSE service.observaciones_internas\n    END,\n    \"updatedAt\" = CURRENT_TIMESTAMP\n  FROM input\n  CROSS JOIN validation\n  WHERE service.id = input.servicio_id\n    AND validation.code IS NULL\n  RETURNING\n    service.id,\n    service.estado,\n    service.responsable,\n    service.observaciones_internas\n)\nSELECT\n  CASE\n    WHEN validation.code IS NOT NULL THEN\n      jsonb_build_object(\n        'success', false,\n        'code', validation.code,\n        'message', validation.message\n      )\n    ELSE\n      jsonb_build_object(\n        'success', true,\n        'servicio_id', updated_service.id,\n        'estado', updated_service.estado,\n        'responsable_id', updated_service.responsable,\n        'observaciones_internas', updated_service.observaciones_internas\n      )\n  END AS response\nFROM validation\nLEFT JOIN updated_service ON TRUE;\n",
+          "params": {
+            "payload": {
+              "code": "return context.parameters['payload']",
+              "__wwtype": "js"
+            },
+            "auth_user_id": {
+              "code": "return context.auth.user?.id ?? null",
+              "__wwtype": "js"
+            }
+          },
+          "__wwdescription": "Valida el payload y actualiza únicamente los campos expresamente permitidos."
+        },
+        "TRY_UPDATE": {
+          "id": "TRY_UPDATE",
+          "name": "Ejecutar actualización segura",
+          "next": null,
+          "type": "trycatch",
+          "catch": true,
+          "finally": false,
+          "branches": [
+            {
+              "id": "SQL_UPDATE",
+              "value": "try"
+            },
+            {
+              "id": "RETURN_INTERNAL_ERROR",
+              "value": "catch"
+            }
+          ],
+          "__wwdescription": "Captura cualquier error técnico inesperado sin exponer detalles internos."
+        },
+        "RETURN_UPDATE": {
+          "id": "RETURN_UPDATE",
+          "args": {
+            "body": {
+              "code": "return context.workflow['SQL_UPDATE'].result.rows[0].response",
+              "__wwtype": "js"
+            },
+            "status": {
+              "code": "const result = context.workflow['SQL_UPDATE'].result?.rows?.[0]?.response; if (result?.success) return 200; if (result?.code === 'NOT_FOUND') return 404; if (result?.code === 'AUTH_REQUIRED') return 401; return 400;",
+              "__wwtype": "js"
+            },
+            "headers": {},
+            "contentType": "application/json"
+          },
+          "name": "Responder resultado de actualización",
+          "next": null,
+          "type": "return-response",
+          "__wwdescription": "Devuelve la respuesta controlada de la actualización."
+        },
+        "RETURN_INTERNAL_ERROR": {
+          "id": "RETURN_INTERNAL_ERROR",
+          "args": {
+            "body": {
+              "code": "INTERNAL_ERROR",
+              "message": "No fue posible actualizar el servicio.",
+              "success": false
+            },
+            "status": 500,
+            "headers": {},
+            "contentType": "application/json"
+          },
+          "name": "Responder error interno",
+          "next": null,
+          "type": "return-response",
+          "__wwdescription": "Devuelve un error genérico sin stack trace cuando ocurre un fallo técnico inesperado."
+        }
+      },
+      "trigger": "ww-api"
+    },
+    {
+      "id": "819b8329-94b8-4a7d-929f-ce7a477c9161",
+      "name": "api_crear_pedido_completo",
+      "type": "api",
+      "description": "Crea atómicamente un PED por servicio solicitado, con numeración consecutiva, idempotencia por token base y archivos privados.",
+      "parameters": [
+        {
+          "key": "payload",
+          "name": "payload",
+          "type": "object"
+        }
+      ],
+      "meta": {
+        "path": "/pedidos/crear-completo",
+        "method": "POST",
+        "security": {
+          "accessRule": "public",
+          "accessRoles": [],
+          "accessMiddlewares": [],
+          "accessRolesCondition": "OR"
+        }
+      },
+      "firstAction": "TRY_CREATE",
+      "firstErrorAction": null,
+      "actions": {
+        "SQL_CREATE": {
+          "id": "SQL_CREATE",
+          "name": "Validar y crear pedido completo",
+          "next": "RETURN_CREATE",
+          "type": "sql-execute",
+          "query": "\nWITH\ninput AS (\n  SELECT\n    CAST($payload AS jsonb) AS payload,\n    CAST($auth_user_id AS uuid) AS auth_user_id,\n    EXTRACT(YEAR FROM (CURRENT_TIMESTAMP AT TIME ZONE 'America/Argentina/Ushuaia'))::int AS current_year,\n    (CURRENT_TIMESTAMP AT TIME ZONE 'America/Argentina/Ushuaia')::date AS local_date\n),\nservice_input AS (\n  SELECT\n    service.position,\n    service.item,\n    service.item->>'area_id' AS area_id_text,\n    service.item->>'tipo_servicio_id' AS tipo_servicio_id_text,\n    CASE\n      WHEN CHAR_LENGTH(COALESCE(service.item->>'area_id', '')) = 36\n        AND COALESCE(service.item->>'area_id', '') ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}'\n      THEN (service.item->>'area_id')::uuid\n      ELSE NULL\n    END AS area_id,\n    CASE\n      WHEN CHAR_LENGTH(COALESCE(service.item->>'tipo_servicio_id', '')) = 36\n        AND COALESCE(service.item->>'tipo_servicio_id', '') ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}'\n      THEN (service.item->>'tipo_servicio_id')::uuid\n      ELSE NULL\n    END AS tipo_servicio_id\n  FROM input\n  CROSS JOIN LATERAL jsonb_array_elements(\n    CASE\n      WHEN jsonb_typeof(input.payload->'servicios') = 'array'\n      THEN input.payload->'servicios'\n      ELSE '[]'::jsonb\n    END\n  ) WITH ORDINALITY AS service(item, position)\n),\nservice_catalog AS (\n  SELECT\n    service_input.*,\n    area.id AS existing_area_id,\n    area.activo AS area_activa,\n    area.slug AS area_slug,\n    area.nombre AS area_nombre,\n    tipo.id AS existing_tipo_id,\n    tipo.activo AS tipo_activo,\n    tipo.area AS tipo_area_id,\n    tipo.slug AS tipo_slug,\n    tipo.nombre AS tipo_nombre\n  FROM service_input\n  LEFT JOIN public.areas AS area ON area.id = service_input.area_id\n  LEFT JOIN public.tipos_servicio AS tipo ON tipo.id = service_input.tipo_servicio_id\n),\ngeneral_date_values AS (\n  SELECT sc.position, sc.tipo_slug, date_field.key AS field_name, date_field.value AS date_value\n  FROM service_catalog sc\n  CROSS JOIN LATERAL jsonb_each_text(\n    CASE\n      WHEN jsonb_typeof(sc.item->'informacion_especifica') = 'object'\n      THEN sc.item->'informacion_especifica'\n      ELSE '{}'::jsonb\n    END\n  ) AS date_field(key,value)\n  WHERE\n    (sc.tipo_slug = 'redes_sociales' AND date_field.key = 'fecha_publicacion')\n    OR (sc.tipo_slug = 'produccion_audiovisual' AND date_field.key = 'fecha_limite')\n    OR (sc.tipo_slug = 'cobertura_audiovisual' AND date_field.key = 'fecha')\n    OR (sc.tipo_slug = 'evento' AND date_field.key = 'fecha')\n    OR (sc.tipo_slug = 'afiche' AND date_field.key = 'fecha')\n    OR (sc.tipo_slug = 'fotografias_institucionales' AND date_field.key IN ('edilicias_fecha','personal_fecha'))\n    OR (sc.tipo_slug = 'fotografias_retrato' AND date_field.key IN ('corporativo_fecha','documentacion_fecha'))\n),\nfile_input AS (\n SELECT sc.position service_position, f.position file_position, f.item, sc.tipo_slug,\n  f.item->>'categoria' categoria, f.item->>'path' path,\n  f.item->>'nombre_original' nombre_original, LOWER(f.item->>'mime_type') mime_type,\n  f.item->>'size_bytes' size_bytes_text\n FROM service_catalog sc\n CROSS JOIN LATERAL jsonb_array_elements(\n  CASE WHEN jsonb_typeof(sc.item->'archivos')='array' THEN sc.item->'archivos' ELSE '[]'::jsonb END\n ) WITH ORDINALITY f(item,position)\n),\nfile_rules AS (\n SELECT fi.*,\n  CASE\n   WHEN categoria IN ('fotografia','logo','firma') THEN mime_type IN ('image/jpeg','image/png','image/webp')\n   WHEN categoria='video' THEN mime_type IN ('video/mp4','video/webm','video/quicktime')\n   WHEN categoria='documento' THEN mime_type IN ('application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','text/plain')\n   WHEN categoria='referencia' THEN mime_type IN ('image/jpeg','image/png','image/webp','application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','video/mp4','video/webm','video/quicktime','text/plain')\n   WHEN categoria='contenido_adicional' THEN mime_type IN ('image/jpeg','image/png','image/webp','application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','text/plain')\n   ELSE FALSE END allowed_mime,\n  CASE tipo_slug\n   WHEN 'flyer_rrss' THEN categoria=ANY(ARRAY['contenido_adicional','fotografia','logo'])\n   WHEN 'invitacion_digital' THEN categoria=ANY(ARRAY['contenido_adicional','fotografia','logo'])\n   WHEN 'invitacion_impresa' THEN categoria=ANY(ARRAY['contenido_adicional','fotografia','logo'])\n   WHEN 'banner' THEN categoria=ANY(ARRAY['contenido_adicional','fotografia','logo'])\n   WHEN 'afiche' THEN categoria=ANY(ARRAY['contenido_adicional','fotografia','logo'])\n   WHEN 'folleto' THEN categoria=ANY(ARRAY['contenido_adicional','fotografia','logo'])\n   WHEN 'certificado' THEN categoria=ANY(ARRAY['contenido_adicional','logo','firma'])\n   WHEN 'cartel_externo' THEN categoria=ANY(ARRAY['contenido_adicional','fotografia','logo'])\n   WHEN 'carteleria_senaletica' THEN categoria=ANY(ARRAY['contenido_adicional','fotografia'])\n   WHEN 'ploteo_vehicular' THEN categoria=ANY(ARRAY['contenido_adicional','fotografia','logo'])\n   WHEN 'ploteo_ventanas_edificio' THEN categoria=ANY(ARRAY['contenido_adicional','fotografia','logo'])\n   WHEN 'web_recurso_grafico' THEN categoria=ANY(ARRAY['contenido_adicional','fotografia','logo'])\n   WHEN 'produccion_audiovisual' THEN categoria=ANY(ARRAY['video','documento','referencia'])\n   WHEN 'redes_sociales' THEN categoria=ANY(ARRAY['fotografia','video','documento','logo','referencia'])\n   ELSE FALSE END allowed_category\n FROM file_input fi\n),\nvalidation AS (\n  SELECT\n    CASE\n      WHEN jsonb_typeof(input.payload) <> 'object'\n        THEN 'VALIDATION_ERROR'\n      WHEN EXISTS (\n        SELECT 1\n        FROM jsonb_object_keys(input.payload) AS key_name\n        WHERE key_name NOT IN ('submission_token', 'pedido', 'servicios')\n      )\n        THEN 'FORBIDDEN_FIELDS'\n      WHEN BTRIM(COALESCE(input.payload->>'submission_token', '')) = ''\n        THEN 'VALIDATION_ERROR'\n      WHEN CHAR_LENGTH(BTRIM(input.payload->>'submission_token')) <> 36\n        OR NOT (BTRIM(input.payload->>'submission_token') ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}')\n        THEN 'INVALID_SUBMISSION_TOKEN'\n      WHEN EXISTS (\n        SELECT 1 FROM public.pedidos\n        WHERE submission_token = BTRIM(input.payload->>'submission_token')\n           OR submission_token LIKE BTRIM(input.payload->>'submission_token') || ':%'\n      )\n        THEN 'SUBMISSION_TOKEN_USED'\n      WHEN jsonb_typeof(input.payload->'pedido') <> 'object'\n        THEN 'VALIDATION_ERROR'\n      WHEN EXISTS (\n        SELECT 1\n        FROM jsonb_object_keys(input.payload->'pedido') AS key_name\n        WHERE key_name NOT IN (\n          'nombre_apellido',\n          'telefono',\n          'correo',\n          'area_solicitante',\n          'tipos_pedido'\n        )\n      )\n        THEN 'FORBIDDEN_FIELDS'\n      WHEN BTRIM(COALESCE(input.payload->'pedido'->>'nombre_apellido', '')) = ''\n        THEN 'VALIDATION_ERROR'\n      WHEN BTRIM(COALESCE(input.payload->'pedido'->>'telefono', '')) = ''\n        THEN 'VALIDATION_ERROR'\n      WHEN BTRIM(COALESCE(input.payload->'pedido'->>'correo', '')) = ''\n        THEN 'VALIDATION_ERROR'\n      WHEN NOT (input.payload->'pedido'->>'correo' ~* E'\\\\A[A-Z0-9._%+-]+@[A-Z0-9.-]+\\\\.[A-Z]{2,}\\\\Z')\n        THEN 'VALIDATION_ERROR'\n      WHEN BTRIM(COALESCE(input.payload->'pedido'->>'area_solicitante', '')) = ''\n        THEN 'VALIDATION_ERROR'\n      WHEN jsonb_typeof(input.payload->'pedido'->'tipos_pedido') <> 'array'\n        OR jsonb_array_length(input.payload->'pedido'->'tipos_pedido') = 0\n        THEN 'VALIDATION_ERROR'\n      WHEN jsonb_typeof(input.payload->'servicios') <> 'array'\n        OR jsonb_array_length(input.payload->'servicios') = 0\n        THEN 'VALIDATION_ERROR'\n      WHEN EXISTS (\n        SELECT 1 FROM service_input WHERE jsonb_typeof(item) <> 'object'\n      )\n        THEN 'VALIDATION_ERROR'\n      WHEN EXISTS (\n        SELECT 1\n        FROM service_input\n        WHERE item - ARRAY[\n          'area_id',\n          'tipo_servicio_id',\n          'informacion_especifica',\n          'archivos'\n        ] <> '{}'::jsonb\n      )\n        THEN 'FORBIDDEN_FIELDS'\n      WHEN EXISTS (\n        SELECT 1 FROM service_input\n        WHERE area_id IS NULL OR tipo_servicio_id IS NULL\n      )\n        THEN 'VALIDATION_ERROR'\n      WHEN EXISTS (\n        SELECT 1 FROM service_input\n        WHERE jsonb_typeof(item->'informacion_especifica') <> 'object'\n      )\n        THEN 'VALIDATION_ERROR'\n      WHEN EXISTS (SELECT 1 FROM service_input WHERE item ? 'archivos' AND jsonb_typeof(item->'archivos')<>'array') THEN 'INVALID_FILES'\n      WHEN EXISTS (SELECT 1 FROM file_input WHERE jsonb_typeof(item)<>'object') THEN 'INVALID_FILES'\n      WHEN EXISTS (SELECT 1 FROM file_input WHERE item-ARRAY['categoria','path','nombre_original','mime_type','size_bytes']<>'{}'::jsonb) THEN 'FORBIDDEN_FILE_FIELDS'\n      WHEN EXISTS (SELECT 1 FROM file_input WHERE BTRIM(COALESCE(categoria,''))='' OR BTRIM(COALESCE(path,''))='' OR BTRIM(COALESCE(nombre_original,''))='' OR BTRIM(COALESCE(mime_type,''))='' OR jsonb_typeof(item->'size_bytes')<>'number' OR (item->>'size_bytes')::numeric<=0) THEN 'INVALID_FILE_METADATA'\n      WHEN EXISTS (\n       SELECT 1 FROM file_rules CROSS JOIN input\n       WHERE path NOT LIKE 'pedidos/'||(input.payload->>'submission_token')||'/'||tipo_slug||'/'||categoria||'/%'\n        OR SUBSTRING(path FROM CHAR_LENGTH('pedidos/'||(input.payload->>'submission_token')||'/'||tipo_slug||'/'||categoria||'/')+1)\n          !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\\.(jpg|png|webp|pdf|doc|docx|xls|xlsx|mp4|webm|mov|txt)'\n        OR path LIKE '%..%'\n      ) THEN 'INVALID_STORAGE_PATH'\n      WHEN EXISTS (SELECT 1 FROM file_rules WHERE allowed_mime IS DISTINCT FROM TRUE) THEN 'FILE_TYPE_NOT_ALLOWED'\n      WHEN EXISTS (SELECT 1 FROM file_rules WHERE allowed_category IS DISTINCT FROM TRUE) THEN 'FILE_CATEGORY_NOT_ALLOWED'\n      WHEN EXISTS (SELECT path FROM file_input GROUP BY path HAVING COUNT(*)>1) THEN 'DUPLICATE_FILE'\n      WHEN EXISTS (SELECT 1 FROM file_input WHERE NOT EXISTS (SELECT 1 FROM storage.\"privateFiles\" sf WHERE sf.path=file_input.path)) THEN 'FILE_NOT_FOUND'\n      WHEN EXISTS (SELECT 1 FROM file_input JOIN storage.\"privateFiles\" sf ON sf.path=file_input.path WHERE LOWER(COALESCE(sf.type,''))<>file_input.mime_type OR COALESCE(sf.size::numeric,0)<>(file_input.size_bytes_text)::numeric) THEN 'FILE_METADATA_MISMATCH'\n      WHEN EXISTS (\n        SELECT 1\n        FROM service_input\n        GROUP BY area_id, tipo_servicio_id\n        HAVING COUNT(*) > 1\n      )\n        THEN 'DUPLICATE_SERVICE'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog WHERE existing_area_id IS NULL\n      )\n        THEN 'AREA_NOT_FOUND'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog WHERE area_activa IS DISTINCT FROM TRUE\n      )\n        THEN 'AREA_INACTIVE'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog WHERE area_slug IN ('web', 'prensa_difusion')\n      )\n        THEN 'AREA_NOT_ALLOWED'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog WHERE existing_tipo_id IS NULL\n      )\n        THEN 'SERVICE_NOT_FOUND'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog WHERE tipo_activo IS DISTINCT FROM TRUE\n      )\n        THEN 'SERVICE_INACTIVE'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog WHERE tipo_area_id IS DISTINCT FROM area_id\n      )\n        THEN 'INVALID_AREA_SERVICE'\n      WHEN EXISTS (\n        SELECT 1 FROM jsonb_array_elements_text(input.payload->'pedido'->'tipos_pedido') AS selected_area(area_slug)\n        WHERE NOT EXISTS (SELECT 1 FROM service_catalog WHERE service_catalog.area_slug = selected_area.area_slug)\n      ) THEN 'AREA_WITHOUT_SERVICE'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog\n        WHERE area_slug NOT IN (SELECT value FROM jsonb_array_elements_text(input.payload->'pedido'->'tipos_pedido'))\n      ) THEN 'SERVICE_AREA_NOT_SELECTED'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog CROSS JOIN input\n        WHERE tipo_slug = 'flyer_rrss'\n          AND (\n            CHAR_LENGTH(COALESCE(item->'informacion_especifica'->>'fecha','')) <> 10\n            OR COALESCE(item->'informacion_especifica'->>'fecha','') !~ '^\\d{4}-\\d{2}-\\d{2}'\n            OR (item->'informacion_especifica'->>'fecha') <= input.local_date::text\n          )\n      ) THEN 'INVALID_FLYER_DATE'\n      WHEN EXISTS (\n        SELECT 1 FROM general_date_values CROSS JOIN input\n        WHERE BTRIM(COALESCE(date_value,'')) <> ''\n          AND (\n            CHAR_LENGTH(BTRIM(date_value)) <> 10\n            OR BTRIM(date_value) !~ '^\\d{4}-\\d{2}-\\d{2}'\n            OR BTRIM(date_value) < input.local_date::text\n          )\n      ) THEN 'INVALID_GENERAL_DATE'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog\n        WHERE tipo_slug = 'invitacion_digital'\n          AND (\n            COALESCE(item->'informacion_especifica'->>'tipo','') NOT IN ('Digital','Impresa','Ambas')\n            OR LOWER(COALESCE(item->'informacion_especifica'->>'protocolo_aprobado','false')) <> 'true'\n          )\n      ) THEN 'INVITATION_APPROVAL_REQUIRED'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog\n        WHERE tipo_slug = 'certificado'\n          AND (\n            jsonb_typeof(item->'informacion_especifica'->'firmantes') <> 'array'\n            OR jsonb_array_length(item->'informacion_especifica'->'firmantes') NOT BETWEEN 1 AND 4\n          )\n      ) THEN 'INVALID_CERTIFICATE_SIGNERS'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog sc\n        CROSS JOIN LATERAL jsonb_each_text(sc.item->'informacion_especifica') AS tf(key,value)\n        WHERE tf.key IN ('hora','hora_inicio','hora_fin','hora_finalizacion','edilicias_hora','personal_hora','corporativo_hora','documentacion_hora')\n          AND BTRIM(tf.value) <> ''\n          AND (CHAR_LENGTH(BTRIM(tf.value)) <> 5 OR BTRIM(tf.value) !~ '^(?:[01][0-9]|2[0-3]):[0-5][0-9]')\n      ) THEN 'INVALID_TIME_FORMAT'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog sc\n        CROSS JOIN LATERAL jsonb_each_text(sc.item->'informacion_especifica') AS uf(key,value)\n        WHERE uf.key IN ('link_qr','link_archivo_foto','link')\n          AND BTRIM(uf.value) <> ''\n          AND uf.value !~* '^https?://[^[:space:]]+'\n      ) THEN 'INVALID_OPTIONAL_URL'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog\n        WHERE tipo_slug='redes_sociales'\n          AND (\n            jsonb_typeof(item->'informacion_especifica'->'tipos_contenido') <> 'array'\n            OR jsonb_array_length(item->'informacion_especifica'->'tipos_contenido')=0\n            OR EXISTS (\n              SELECT 1 FROM jsonb_array_elements_text(item->'informacion_especifica'->'tipos_contenido') v(value)\n              WHERE v.value NOT IN ('Foto','Placa','Reel')\n            )\n          )\n      ) THEN 'INVALID_SOCIAL_CONTENT_TYPES'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog\n        WHERE tipo_slug='redes_sociales'\n          AND jsonb_typeof(item->'informacion_especifica'->'link_web')='object'\n          AND LOWER(COALESCE(item->'informacion_especifica'->'link_web'->>'no_aplica','false')) <> 'true'\n          AND BTRIM(COALESCE(item->'informacion_especifica'->'link_web'->>'value','')) <> ''\n          AND item->'informacion_especifica'->'link_web'->>'value' !~* '^https?://[^[:space:]]+'\n      ) THEN 'INVALID_SOCIAL_URL'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog\n        WHERE tipo_slug = 'cobertura_audiovisual'\n          AND (\n            (CHAR_LENGTH(BTRIM(COALESCE(item->'informacion_especifica'->>'hora_inicio',''))) <> 5 OR BTRIM(COALESCE(item->'informacion_especifica'->>'hora_inicio','')) !~ '^(?:[01][0-9]|2[0-3]):[0-5][0-9]')\n            OR (CHAR_LENGTH(BTRIM(COALESCE(item->'informacion_especifica'->>'hora_fin',''))) <> 5 OR BTRIM(COALESCE(item->'informacion_especifica'->>'hora_fin','')) !~ '^(?:[01][0-9]|2[0-3]):[0-5][0-9]')\n            OR (item->'informacion_especifica'->>'hora_inicio') >= (item->'informacion_especifica'->>'hora_fin')\n          )\n      ) THEN 'INVALID_AUDIOVISUAL_TIME'\n\n      ELSE NULL\n    END AS code,\n    CASE\n      WHEN jsonb_typeof(input.payload) <> 'object'\n        THEN 'El payload debe ser un objeto JSON.'\n      WHEN EXISTS (\n        SELECT 1\n        FROM jsonb_object_keys(input.payload) AS key_name\n        WHERE key_name NOT IN ('submission_token', 'pedido', 'servicios')\n      )\n        THEN 'El payload contiene campos de nivel superior no permitidos.'\n      WHEN BTRIM(COALESCE(input.payload->>'submission_token', '')) = ''\n        THEN 'submission_token es obligatorio.'\n      WHEN CHAR_LENGTH(BTRIM(input.payload->>'submission_token')) <> 36\n        OR NOT (BTRIM(input.payload->>'submission_token') ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}')\n        THEN 'submission_token debe ser un UUID válido.'\n      WHEN EXISTS (\n        SELECT 1 FROM public.pedidos\n        WHERE submission_token = BTRIM(input.payload->>'submission_token')\n           OR submission_token LIKE BTRIM(input.payload->>'submission_token') || ':%'\n      )\n        THEN 'El submission_token ya fue utilizado para este envío.'\n      WHEN jsonb_typeof(input.payload->'pedido') <> 'object'\n        THEN 'pedido debe ser un objeto JSON.'\n      WHEN EXISTS (\n        SELECT 1\n        FROM jsonb_object_keys(input.payload->'pedido') AS key_name\n        WHERE key_name NOT IN (\n          'nombre_apellido',\n          'telefono',\n          'correo',\n          'area_solicitante',\n          'tipos_pedido'\n        )\n      )\n        THEN 'pedido contiene campos controlados por backend o no permitidos.'\n      WHEN BTRIM(COALESCE(input.payload->'pedido'->>'nombre_apellido', '')) = ''\n        THEN 'nombre_apellido es obligatorio.'\n      WHEN BTRIM(COALESCE(input.payload->'pedido'->>'telefono', '')) = ''\n        THEN 'telefono es obligatorio.'\n      WHEN BTRIM(COALESCE(input.payload->'pedido'->>'correo', '')) = ''\n        THEN 'correo es obligatorio.'\n      WHEN NOT (input.payload->'pedido'->>'correo' ~* E'\\\\A[A-Z0-9._%+-]+@[A-Z0-9.-]+\\\\.[A-Z]{2,}\\\\Z')\n        THEN 'El formato de correo no es válido.'\n      WHEN BTRIM(COALESCE(input.payload->'pedido'->>'area_solicitante', '')) = ''\n        THEN 'area_solicitante es obligatoria.'\n      WHEN jsonb_typeof(input.payload->'pedido'->'tipos_pedido') <> 'array'\n        OR jsonb_array_length(input.payload->'pedido'->'tipos_pedido') = 0\n        THEN 'tipos_pedido debe ser un array no vacío.'\n      WHEN jsonb_typeof(input.payload->'servicios') <> 'array'\n        OR jsonb_array_length(input.payload->'servicios') = 0\n        THEN 'servicios debe ser un array no vacío.'\n      WHEN EXISTS (\n        SELECT 1 FROM service_input WHERE jsonb_typeof(item) <> 'object'\n      )\n        THEN 'Cada servicio debe ser un objeto JSON.'\n      WHEN EXISTS (\n        SELECT 1\n        FROM service_input\n        WHERE item - ARRAY[\n          'area_id',\n          'tipo_servicio_id',\n          'informacion_especifica',\n          'archivos'\n        ] <> '{}'::jsonb\n      )\n        THEN 'Un servicio contiene campos controlados por backend o no permitidos.'\n      WHEN EXISTS (\n        SELECT 1 FROM service_input\n        WHERE area_id IS NULL OR tipo_servicio_id IS NULL\n      )\n        THEN 'Cada servicio debe incluir area_id y tipo_servicio_id UUID válidos.'\n      WHEN EXISTS (\n        SELECT 1 FROM service_input\n        WHERE jsonb_typeof(item->'informacion_especifica') <> 'object'\n      )\n        THEN 'informacion_especifica debe ser un objeto JSON.'\n      WHEN EXISTS (SELECT 1 FROM service_input WHERE item ? 'archivos' AND jsonb_typeof(item->'archivos')<>'array') THEN 'archivos debe ser un array cuando se incluye.'\n      WHEN EXISTS (SELECT 1 FROM file_input WHERE jsonb_typeof(item)<>'object') THEN 'Cada archivo debe ser un objeto JSON.'\n      WHEN EXISTS (SELECT 1 FROM file_input WHERE item-ARRAY['categoria','path','nombre_original','mime_type','size_bytes']<>'{}'::jsonb) THEN 'Un archivo contiene campos no permitidos.'\n      WHEN EXISTS (SELECT 1 FROM file_input WHERE BTRIM(COALESCE(categoria,''))='' OR BTRIM(COALESCE(path,''))='' OR BTRIM(COALESCE(nombre_original,''))='' OR BTRIM(COALESCE(mime_type,''))='' OR jsonb_typeof(item->'size_bytes')<>'number' OR (item->>'size_bytes')::numeric<=0) THEN 'Los metadatos del archivo son incompletos o inválidos.'\n      WHEN EXISTS (\n       SELECT 1 FROM file_rules CROSS JOIN input\n       WHERE path NOT LIKE 'pedidos/'||(input.payload->>'submission_token')||'/'||tipo_slug||'/'||categoria||'/%'\n        OR SUBSTRING(path FROM CHAR_LENGTH('pedidos/'||(input.payload->>'submission_token')||'/'||tipo_slug||'/'||categoria||'/')+1)\n          !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\\.(jpg|png|webp|pdf|doc|docx|xls|xlsx|mp4|webm|mov|txt)'\n        OR path LIKE '%..%'\n      ) THEN 'La referencia privada no pertenece al submission token, servicio y categoría declarados.'\n      WHEN EXISTS (SELECT 1 FROM file_rules WHERE allowed_mime IS DISTINCT FROM TRUE) THEN 'El tipo MIME no está permitido para la categoría indicada.'\n      WHEN EXISTS (SELECT 1 FROM file_rules WHERE allowed_category IS DISTINCT FROM TRUE) THEN 'La categoría de archivo no corresponde al servicio indicado.'\n      WHEN EXISTS (SELECT path FROM file_input GROUP BY path HAVING COUNT(*)>1) THEN 'El mismo archivo privado aparece más de una vez.'\n      WHEN EXISTS (SELECT 1 FROM file_input WHERE NOT EXISTS (SELECT 1 FROM storage.\"privateFiles\" sf WHERE sf.path=file_input.path)) THEN 'Uno de los archivos privados no existe en WeWeb Storage.'\n      WHEN EXISTS (SELECT 1 FROM file_input JOIN storage.\"privateFiles\" sf ON sf.path=file_input.path WHERE LOWER(COALESCE(sf.type,''))<>file_input.mime_type OR COALESCE(sf.size::numeric,0)<>(file_input.size_bytes_text)::numeric) THEN 'El tipo MIME o tamaño informado no coincide con el archivo real de WeWeb Storage.'\n      WHEN EXISTS (\n        SELECT 1 FROM service_input\n        GROUP BY area_id, tipo_servicio_id\n        HAVING COUNT(*) > 1\n      )\n        THEN 'El payload contiene el mismo servicio más de una vez.'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog WHERE existing_area_id IS NULL\n      )\n        THEN 'El área indicada no existe.'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog WHERE area_activa IS DISTINCT FROM TRUE\n      )\n        THEN 'El área indicada está inactiva.'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog WHERE area_slug IN ('web', 'prensa_difusion')\n      )\n        THEN 'Web y Prensa / Difusión no están habilitados como servicios independientes.'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog WHERE existing_tipo_id IS NULL\n      )\n        THEN 'El tipo de servicio indicado no existe.'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog WHERE tipo_activo IS DISTINCT FROM TRUE\n      )\n        THEN 'El tipo de servicio indicado está inactivo.'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog WHERE tipo_area_id IS DISTINCT FROM area_id\n      )\n        THEN 'El tipo de servicio no pertenece al área indicada.'\n      WHEN EXISTS (\n        SELECT 1 FROM jsonb_array_elements_text(input.payload->'pedido'->'tipos_pedido') AS selected_area(area_slug)\n        WHERE NOT EXISTS (SELECT 1 FROM service_catalog WHERE service_catalog.area_slug = selected_area.area_slug)\n      ) THEN 'Cada área seleccionada debe incluir al menos un servicio correspondiente.'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog\n        WHERE area_slug NOT IN (SELECT value FROM jsonb_array_elements_text(input.payload->'pedido'->'tipos_pedido'))\n      ) THEN 'Todos los servicios deben pertenecer a un área seleccionada.'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog CROSS JOIN input\n        WHERE tipo_slug = 'flyer_rrss'\n          AND (\n            CHAR_LENGTH(COALESCE(item->'informacion_especifica'->>'fecha','')) <> 10\n            OR COALESCE(item->'informacion_especifica'->>'fecha','') !~ '^\\d{4}-\\d{2}-\\d{2}'\n            OR (item->'informacion_especifica'->>'fecha') <= input.local_date::text\n          )\n      ) THEN 'La fecha debe ser posterior al día de hoy.'\n      WHEN EXISTS (\n        SELECT 1 FROM general_date_values CROSS JOIN input\n        WHERE BTRIM(COALESCE(date_value,'')) <> ''\n          AND (\n            CHAR_LENGTH(BTRIM(date_value)) <> 10\n            OR BTRIM(date_value) !~ '^\\d{4}-\\d{2}-\\d{2}'\n            OR BTRIM(date_value) < input.local_date::text\n          )\n      ) THEN 'La fecha no puede ser anterior al día de hoy.'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog\n        WHERE tipo_slug = 'invitacion_digital'\n          AND (\n            COALESCE(item->'informacion_especifica'->>'tipo','') NOT IN ('Digital','Impresa','Ambas')\n            OR LOWER(COALESCE(item->'informacion_especifica'->>'protocolo_aprobado','false')) <> 'true'\n          )\n      ) THEN 'Seleccioná el tipo de invitación y confirmá la aprobación previa de Protocolo.'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog\n        WHERE tipo_slug = 'certificado'\n          AND (\n            jsonb_typeof(item->'informacion_especifica'->'firmantes') <> 'array'\n            OR jsonb_array_length(item->'informacion_especifica'->'firmantes') NOT BETWEEN 1 AND 4\n          )\n      ) THEN 'Certificado debe incluir entre 1 y 4 firmantes.'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog sc\n        CROSS JOIN LATERAL jsonb_each_text(sc.item->'informacion_especifica') AS tf(key,value)\n        WHERE tf.key IN ('hora','hora_inicio','hora_fin','hora_finalizacion','edilicias_hora','personal_hora','corporativo_hora','documentacion_hora')\n          AND BTRIM(tf.value) <> ''\n          AND (CHAR_LENGTH(BTRIM(tf.value)) <> 5 OR BTRIM(tf.value) !~ '^(?:[01][0-9]|2[0-3]):[0-5][0-9]')\n      ) THEN 'Las horas deben utilizar formato HH:mm de 24 horas, sin segundos.'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog sc\n        CROSS JOIN LATERAL jsonb_each_text(sc.item->'informacion_especifica') AS uf(key,value)\n        WHERE uf.key IN ('link_qr','link_archivo_foto','link')\n          AND BTRIM(uf.value) <> ''\n          AND uf.value !~* '^https?://[^[:space:]]+'\n      ) THEN 'Los enlaces opcionales deben comenzar con http:// o https://.'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog\n        WHERE tipo_slug='redes_sociales'\n          AND (\n            jsonb_typeof(item->'informacion_especifica'->'tipos_contenido') <> 'array'\n            OR jsonb_array_length(item->'informacion_especifica'->'tipos_contenido')=0\n            OR EXISTS (\n              SELECT 1 FROM jsonb_array_elements_text(item->'informacion_especifica'->'tipos_contenido') v(value)\n              WHERE v.value NOT IN ('Foto','Placa','Reel')\n            )\n          )\n      ) THEN 'Redes sociales debe incluir al menos uno de estos formatos: Foto, Placa o Reel.'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog\n        WHERE tipo_slug='redes_sociales'\n          AND jsonb_typeof(item->'informacion_especifica'->'link_web')='object'\n          AND LOWER(COALESCE(item->'informacion_especifica'->'link_web'->>'no_aplica','false')) <> 'true'\n          AND BTRIM(COALESCE(item->'informacion_especifica'->'link_web'->>'value','')) <> ''\n          AND item->'informacion_especifica'->'link_web'->>'value' !~* '^https?://[^[:space:]]+'\n      ) THEN 'Link / Web debe comenzar con http:// o https://, o marcarse como No aplica.'\n      WHEN EXISTS (\n        SELECT 1 FROM service_catalog\n        WHERE tipo_slug = 'cobertura_audiovisual'\n          AND (\n            (CHAR_LENGTH(BTRIM(COALESCE(item->'informacion_especifica'->>'hora_inicio',''))) <> 5 OR BTRIM(COALESCE(item->'informacion_especifica'->>'hora_inicio','')) !~ '^(?:[01][0-9]|2[0-3]):[0-5][0-9]')\n            OR (CHAR_LENGTH(BTRIM(COALESCE(item->'informacion_especifica'->>'hora_fin',''))) <> 5 OR BTRIM(COALESCE(item->'informacion_especifica'->>'hora_fin','')) !~ '^(?:[01][0-9]|2[0-3]):[0-5][0-9]')\n            OR (item->'informacion_especifica'->>'hora_inicio') >= (item->'informacion_especifica'->>'hora_fin')\n          )\n      ) THEN 'La hora de finalización debe ser posterior a la hora de inicio.'\n\n      ELSE NULL\n    END AS message\n  FROM input\n),\nservice_count AS (\n  SELECT COUNT(*)::bigint AS value\n  FROM service_catalog\n),\nsequence_reservation AS (\n  INSERT INTO public.secuencias (clave,valor_actual)\n  SELECT 'pedidos_'||input.current_year::text,service_count.value\n  FROM input CROSS JOIN validation CROSS JOIN service_count\n  WHERE validation.code IS NULL AND service_count.value>0\n  ON CONFLICT (clave)\n  DO UPDATE SET valor_actual=public.secuencias.valor_actual+EXCLUDED.valor_actual\n  RETURNING valor_actual\n),\nservice_numbered AS (\n  SELECT\n    sc.*,\n    (sequence_reservation.valor_actual::bigint-service_count.value+\n      ROW_NUMBER() OVER (ORDER BY sc.position))::bigint AS numero\n  FROM service_catalog sc\n  CROSS JOIN sequence_reservation\n  CROSS JOIN service_count\n),\npedido_rows AS (\n  SELECT\n    uuidv7() AS id,\n    sn.position,\n    sn.area_id,\n    sn.area_slug,\n    sn.area_nombre,\n    sn.tipo_servicio_id,\n    sn.tipo_slug,\n    sn.tipo_nombre AS servicio_nombre,\n    sn.numero,\n    'PED-'||input.current_year::text||'-'||LPAD(sn.numero::text,6,'0') AS pedido_visible,\n    BTRIM(input.payload->>'submission_token')||':'||sn.tipo_servicio_id::text AS derived_submission_token\n  FROM service_numbered sn\n  CROSS JOIN input\n),\npedidos_insert AS (\n  INSERT INTO public.pedidos\n    (id,pedido_visible,numero,estado_general,creado_por,nombre_apellido,telefono,correo,area_solicitante,tipos_pedido,submission_token)\n  SELECT\n    pr.id,pr.pedido_visible,pr.numero,'Nuevo',input.auth_user_id,\n    BTRIM(input.payload->'pedido'->>'nombre_apellido'),\n    BTRIM(input.payload->'pedido'->>'telefono'),\n    BTRIM(input.payload->'pedido'->>'correo'),\n    BTRIM(input.payload->'pedido'->>'area_solicitante'),\n    jsonb_build_array(pr.area_slug),\n    pr.derived_submission_token\n  FROM pedido_rows pr\n  CROSS JOIN input\n  ORDER BY pr.position\n  RETURNING id,pedido_visible,numero\n),\ncreated_pedidos AS (\n  SELECT\n    pi.id,\n    pi.pedido_visible,\n    pi.numero,\n    pr.position,\n    pr.area_id,\n    pr.area_nombre,\n    pr.tipo_servicio_id,\n    pr.servicio_nombre\n  FROM pedidos_insert pi\n  JOIN pedido_rows pr ON pr.id=pi.id\n),\nservice_rows AS (\n  SELECT\n    uuidv7() AS servicio_id,\n    cp.id AS pedido_id,\n    sc.position,\n    sc.area_id,\n    sc.tipo_servicio_id,\n    sc.item->'informacion_especifica' AS informacion_especifica\n  FROM service_catalog sc\n  JOIN created_pedidos cp ON cp.position=sc.position\n),\nservices_insert AS (\n  INSERT INTO public.servicios_solicitados\n    (id,pedido,area,tipo_servicio,estado,responsable,informacion_especifica,observaciones_internas)\n  SELECT\n    servicio_id,pedido_id,area_id,tipo_servicio_id,'Nuevo',NULL,informacion_especifica,NULL\n  FROM service_rows\n  ORDER BY position\n  RETURNING id,pedido\n),\nfiles_insert AS (\n  INSERT INTO public.archivos\n    (categoria,nombre_original,mime_type,size_bytes,storage_path,servicio,subido_por,archivo)\n  SELECT\n    fi.categoria,fi.nombre_original,fi.mime_type,(fi.size_bytes_text)::double precision,\n    fi.path,sr.servicio_id,input.auth_user_id,fi.path\n  FROM file_input fi\n  JOIN service_rows sr ON sr.position=fi.service_position\n  CROSS JOIN input\n  ORDER BY fi.service_position,fi.file_position\n  RETURNING id,servicio,archivo\n)\nSELECT CASE WHEN validation.code IS NOT NULL THEN\n  jsonb_build_object('success',false,'code',validation.code,'message',validation.message)\nELSE\n  jsonb_build_object(\n    'success',true,\n    'pedidos_creados',COALESCE((\n      SELECT jsonb_agg(jsonb_build_object(\n        'pedido_id',id,\n        'pedido_visible',pedido_visible,\n        'numero',numero,\n        'area_id',area_id,\n        'area_nombre',area_nombre,\n        'tipo_servicio_id',tipo_servicio_id,\n        'servicio_nombre',servicio_nombre\n      ) ORDER BY position)\n      FROM created_pedidos\n    ),'[]'::jsonb),\n    'total_pedidos',(SELECT COUNT(*) FROM created_pedidos),\n    'total_servicios',(SELECT COUNT(*) FROM services_insert),\n    'archivos_creados',(SELECT COUNT(*) FROM files_insert)\n  )\nEND AS response\nFROM validation;",
+          "params": {
+            "payload": {
+              "code": "return context.parameters['payload']",
+              "__wwtype": "js"
+            },
+            "auth_user_id": {
+              "code": "return context.auth.user?.id ?? null",
+              "__wwtype": "js"
+            }
+          },
+          "__wwdescription": "Valida y crea un PED independiente por servicio, con numeración por orden de payload, archivos vinculados y una única operación SQL atómica."
+        },
+        "TRY_CREATE": {
+          "id": "TRY_CREATE",
+          "name": "Ejecutar creación segura",
+          "next": null,
+          "type": "trycatch",
+          "catch": true,
+          "finally": false,
+          "branches": [
+            {
+              "id": "SQL_CREATE",
+              "value": "try"
+            },
+            {
+              "id": "RETURN_INTERNAL_ERROR",
+              "value": "catch"
+            }
+          ],
+          "__wwdescription": "Captura cualquier error técnico inesperado sin exponer detalles internos."
+        },
+        "RETURN_CREATE": {
+          "id": "RETURN_CREATE",
+          "args": {
+            "body": {
+              "code": "return context.workflow['SQL_CREATE'].result.rows[0].response",
+              "__wwtype": "js"
+            },
+            "status": {
+              "code": "const result = context.workflow['SQL_CREATE'].result?.rows?.[0]?.response; if (result?.success) return 200; if (result?.code === 'SUBMISSION_TOKEN_USED') return 409; return 400;",
+              "__wwtype": "js"
+            },
+            "headers": {},
+            "contentType": "application/json"
+          },
+          "name": "Responder resultado de creación",
+          "next": null,
+          "type": "return-response",
+          "__wwdescription": "Devuelve al cliente únicamente la respuesta controlada producida por la operación atómica."
+        },
+        "RETURN_INTERNAL_ERROR": {
+          "id": "RETURN_INTERNAL_ERROR",
+          "args": {
+            "body": {
+              "code": "INTERNAL_ERROR",
+              "message": "No fue posible crear el pedido completo.",
+              "success": false
+            },
+            "status": 500,
+            "headers": {},
+            "contentType": "application/json"
+          },
+          "name": "Responder error interno",
+          "next": null,
+          "type": "return-response",
+          "__wwdescription": "Devuelve un error genérico sin stack trace cuando ocurre un fallo técnico inesperado."
+        }
+      },
+      "trigger": "ww-api"
+    },
+    {
+      "id": "dac4f443-97ed-4825-9727-e060ce9973e9",
+      "name": "api_delete_temp_file",
+      "type": "api",
+      "description": "Elimina de Storage Private una carga temporal limitada estrictamente a su submission token, servicio y categoría.",
+      "parameters": [
+        {
+          "key": "submission_token",
+          "name": "submission_token",
+          "type": "string"
+        },
+        {
+          "key": "service_key",
+          "name": "service_key",
+          "type": "string"
+        },
+        {
+          "key": "categoria",
+          "name": "categoria",
+          "type": "string"
+        },
+        {
+          "key": "path",
+          "name": "path",
+          "type": "string"
+        }
+      ],
+      "meta": {
+        "path": "/archivos/temporal",
+        "method": "DELETE",
+        "security": {
+          "accessRule": "public",
+          "accessRoles": [],
+          "accessMiddlewares": [],
+          "accessRolesCondition": "OR"
+        }
+      },
+      "firstAction": "TRY_DELETE",
+      "firstErrorAction": null,
+      "actions": {
+        "TRY_DELETE": {
+          "id": "TRY_DELETE",
+          "name": "Ejecutar limpieza segura",
+          "next": null,
+          "type": "trycatch",
+          "catch": true,
+          "finally": false,
+          "branches": [
+            {
+              "id": "VALIDATE_PATH",
+              "value": "try"
+            },
+            {
+              "id": "RETURN_INTERNAL_ERROR",
+              "value": "catch"
+            }
+          ],
+          "__wwdescription": "Captura errores técnicos durante la eliminación temporal."
+        },
+        "IF_PATH_VALID": {
+          "id": "IF_PATH_VALID",
+          "name": "¿Ruta temporal válida?",
+          "next": null,
+          "type": "if",
+          "value": {
+            "code": "return context.workflow['VALIDATE_PATH'].result.valid === true",
+            "__wwtype": "js"
+          },
+          "branches": [
+            {
+              "id": "DELETE_PRIVATE",
+              "value": true
+            },
+            {
+              "id": "RETURN_PATH_ERROR",
+              "value": false
+            }
+          ],
+          "__wwdescription": "Solo permite continuar con una referencia privada que cumpla el namespace seguro."
+        },
+        "VALIDATE_PATH": {
+          "id": "VALIDATE_PATH",
+          "code": "// Solo permitimos borrar una ruta perteneciente al token y servicio declarados.\nconst submissionToken=String(context.parameters['submission_token']||'').trim();\nconst serviceKey=String(context.parameters['service_key']||'').trim();\nconst categoria=String(context.parameters['categoria']||'').trim();\nconst path=String(context.parameters['path']||'').trim();\nconst uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;\nconst safe=/^[a-z0-9_]+$/;\nconst prefix=`pedidos/${submissionToken}/${serviceKey}/${categoria}/`;\nconst filePattern=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\\.(jpg|png|webp|pdf|doc|docx|xls|xlsx|mp4|webm|mov|txt)$/i;\nconst fileName=path.slice(prefix.length);\nconst valid=uuid.test(submissionToken)&&safe.test(serviceKey)&&safe.test(categoria)&&path.startsWith(prefix)&&filePattern.test(fileName)&&!path.includes('..');\nreturn {valid,path};",
+          "name": "Validar namespace temporal",
+          "next": "IF_PATH_VALID",
+          "type": "custom-js",
+          "__wwdescription": "Impide recibir una ruta arbitraria y restringe el borrado al token, servicio y categoría declarados."
+        },
+        "DELETE_PRIVATE": {
+          "id": "DELETE_PRIVATE",
+          "args": {
+            "paths": {
+              "code": "return [context.workflow['VALIDATE_PATH'].result.path]",
+              "__wwtype": "js"
+            },
+            "access": "private"
+          },
+          "name": "Eliminar archivo privado temporal",
+          "next": "RETURN_DELETED",
+          "type": "storage-delete",
+          "__wwdescription": "Elimina exclusivamente la ruta privada validada."
+        },
+        "RETURN_DELETED": {
+          "id": "RETURN_DELETED",
+          "args": {
+            "body": {
+              "success": true
+            },
+            "status": 200,
+            "headers": {},
+            "contentType": "application/json"
+          },
+          "name": "Confirmar limpieza",
+          "next": null,
+          "type": "return-response",
+          "__wwdescription": "Confirma que la referencia temporal fue eliminada."
+        },
+        "RETURN_PATH_ERROR": {
+          "id": "RETURN_PATH_ERROR",
+          "args": {
+            "body": {
+              "code": "INVALID_STORAGE_PATH",
+              "message": "La referencia temporal no es válida.",
+              "success": false
+            },
+            "status": 400,
+            "headers": {},
+            "contentType": "application/json"
+          },
+          "name": "Rechazar ruta insegura",
+          "next": null,
+          "type": "return-response",
+          "__wwdescription": "Rechaza cualquier ruta que no pertenezca exactamente al namespace temporal esperado."
+        },
+        "RETURN_INTERNAL_ERROR": {
+          "id": "RETURN_INTERNAL_ERROR",
+          "args": {
+            "body": {
+              "code": "INTERNAL_ERROR",
+              "message": "No fue posible limpiar el archivo temporal.",
+              "success": false
+            },
+            "status": 500,
+            "headers": {},
+            "contentType": "application/json"
+          },
+          "name": "Responder error interno",
+          "next": null,
+          "type": "return-response",
+          "__wwdescription": "Devuelve un error genérico sin revelar detalles."
+        }
+      },
+      "trigger": "ww-api"
+    },
+    {
+      "id": "9b59d32a-6460-4911-a64a-84e753b7b684",
+      "name": "api_get_signed_file_url",
+      "type": "api",
+      "description": "Genera una URL temporal para un archivo privado persistido, exclusivamente para equipo interno y administradores.",
+      "parameters": [
+        {
+          "key": "archivo_id",
+          "name": "archivo_id",
+          "type": "string"
+        }
+      ],
+      "meta": {
+        "path": "/archivos/signed-url",
+        "method": "POST",
+        "security": {
+          "accessRule": "authenticated",
+          "accessRoles": [
+            "equipo_interno",
+            "admin"
+          ],
+          "accessMiddlewares": [],
+          "accessRolesCondition": "OR"
+        }
+      },
+      "firstAction": "TRY_SIGN",
+      "firstErrorAction": null,
+      "actions": {
+        "TRY_SIGN": {
+          "id": "TRY_SIGN",
+          "name": "Generar acceso seguro",
+          "next": null,
+          "type": "trycatch",
+          "catch": true,
+          "finally": false,
+          "branches": [
+            {
+              "id": "FIND_FILE",
+              "value": "try"
+            },
+            {
+              "id": "RETURN_INTERNAL_ERROR",
+              "value": "catch"
+            }
+          ],
+          "__wwdescription": "Captura errores técnicos sin revelar rutas privadas."
+        },
+        "FIND_FILE": {
+          "id": "FIND_FILE",
+          "name": "Validar archivo persistido",
+          "next": "IF_FILE_FOUND",
+          "type": "sql-execute",
+          "query": "WITH input AS (\n SELECT (\n  CASE\n   WHEN CHAR_LENGTH(COALESCE($archivo_id,''))=36\n    AND COALESCE($archivo_id,'') ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}'\n   THEN $archivo_id ELSE NULL\n  END\n )::uuid AS archivo_id\n)\nSELECT jsonb_build_object(\n 'valid', a.id IS NOT NULL AND a.archivo IS NOT NULL AND a.archivo = a.storage_path,\n 'code', CASE WHEN input.archivo_id IS NULL THEN 'VALIDATION_ERROR' WHEN a.id IS NULL THEN 'FILE_NOT_FOUND' ELSE NULL END,\n 'message', CASE WHEN input.archivo_id IS NULL THEN 'archivo_id no es válido.' WHEN a.id IS NULL THEN 'El archivo solicitado no existe.' ELSE NULL END,\n 'path', a.archivo\n) AS response\nFROM input LEFT JOIN public.archivos a ON a.id=input.archivo_id;",
+          "params": {
+            "archivo_id": {
+              "code": "return context.parameters['archivo_id']",
+              "__wwtype": "js"
+            }
+          },
+          "__wwdescription": "Busca el archivo por identificador y comprueba que la referencia nativa coincida con storage_path."
+        },
+        "IF_FILE_FOUND": {
+          "id": "IF_FILE_FOUND",
+          "name": "¿Archivo disponible?",
+          "next": null,
+          "type": "if",
+          "value": {
+            "code": "return context.workflow['FIND_FILE'].result?.rows?.[0]?.response?.valid === true",
+            "__wwtype": "js"
+          },
+          "branches": [
+            {
+              "id": "SIGN_PRIVATE_URL",
+              "value": true
+            },
+            {
+              "id": "RETURN_FILE_ERROR",
+              "value": false
+            }
+          ],
+          "__wwdescription": "Solo genera una URL para una referencia persistida y válida."
+        },
+        "SIGN_PRIVATE_URL": {
+          "id": "SIGN_PRIVATE_URL",
+          "args": {
+            "path": {
+              "code": "return context.workflow['FIND_FILE'].result.rows[0].response.path",
+              "__wwtype": "js"
+            },
+            "access": "private",
+            "expiresIn": 60
+          },
+          "name": "Firmar URL privada",
+          "next": "RETURN_SIGNED_URL",
+          "type": "storage-get-signed-url",
+          "__wwdescription": "Genera un acceso de lectura temporal de 60 segundos sin exponer la ruta en la respuesta."
+        },
+        "RETURN_FILE_ERROR": {
+          "id": "RETURN_FILE_ERROR",
+          "args": {
+            "body": {
+              "code": "const r=context.workflow['FIND_FILE'].result.rows[0].response; return {success:false,code:r.code,message:r.message};",
+              "__wwtype": "js"
+            },
+            "status": {
+              "code": "return context.workflow['FIND_FILE'].result.rows[0].response.code === 'VALIDATION_ERROR' ? 400 : 404",
+              "__wwtype": "js"
+            },
+            "headers": {
+              "Cache-Control": "no-store"
+            },
+            "contentType": "application/json"
+          },
+          "name": "Responder archivo inexistente",
+          "next": null,
+          "type": "return-response",
+          "__wwdescription": "Devuelve un error controlado sin exponer información privada."
+        },
+        "RETURN_SIGNED_URL": {
+          "id": "RETURN_SIGNED_URL",
+          "args": {
+            "body": {
+              "code": "const result=context.workflow['SIGN_PRIVATE_URL'].result; const url=typeof result==='string'?result:result?.url; return {success:true,url,expires_in:60};",
+              "__wwtype": "js"
+            },
+            "status": 200,
+            "headers": {
+              "Cache-Control": "no-store"
+            },
+            "contentType": "application/json"
+          },
+          "name": "Responder URL firmada",
+          "next": null,
+          "type": "return-response",
+          "__wwdescription": "Entrega solamente la URL temporal al usuario interno autorizado."
+        },
+        "RETURN_INTERNAL_ERROR": {
+          "id": "RETURN_INTERNAL_ERROR",
+          "args": {
+            "body": {
+              "code": "INTERNAL_ERROR",
+              "message": "No fue posible generar el acceso temporal.",
+              "success": false
+            },
+            "status": 500,
+            "headers": {
+              "Cache-Control": "no-store"
+            },
+            "contentType": "application/json"
+          },
+          "name": "Responder error interno",
+          "next": null,
+          "type": "return-response",
+          "__wwdescription": "Devuelve un error genérico sin stack trace."
+        }
+      },
+      "trigger": "ww-api"
+    },
+    {
+      "id": "565645b9-79e5-4981-bdd4-763cf076601b",
+      "name": "api_listar_responsables",
+      "type": "api",
+      "description": "Lista de forma segura únicamente usuarios de WeWeb Auth con rol equipo_interno o admin, exponiendo solo id, nombre visible y email.",
+      "parameters": [],
+      "meta": {
+        "path": "/responsables/listar",
+        "method": "GET",
+        "security": {
+          "accessRule": "authenticated",
+          "accessRoles": [
+            "equipo_interno",
+            "admin"
+          ],
+          "accessMiddlewares": [],
+          "accessRolesCondition": "OR"
+        }
+      },
+      "firstAction": "TRY_LIST",
+      "firstErrorAction": null,
+      "actions": {
+        "SQL_LIST": {
+          "id": "SQL_LIST",
+          "name": "Consultar usuarios internos",
+          "next": "RETURN_LIST",
+          "type": "sql-execute",
+          "query": "\nSELECT jsonb_build_object(\n  'success', true,\n  'responsables',\n  COALESCE(\n    jsonb_agg(\n      jsonb_build_object(\n        'id', internal_user.id,\n        'name', NULLIF(BTRIM(internal_user.name), ''),\n        'email', internal_user.email\n      )\n      ORDER BY COALESCE(NULLIF(BTRIM(internal_user.name), ''), internal_user.email)\n    ),\n    '[]'::jsonb\n  )\n) AS response\nFROM auth.users AS internal_user\nWHERE COALESCE(to_jsonb(internal_user)->'roles', '[]'::jsonb)\n  ?| ARRAY['equipo_interno', 'admin'];\n",
+          "params": {},
+          "__wwdescription": "Filtra autoritativamente por los roles internos almacenados por WeWeb Auth y devuelve solo campos de identificación."
+        },
+        "TRY_LIST": {
+          "id": "TRY_LIST",
+          "name": "Listar responsables con manejo seguro",
+          "next": null,
+          "type": "trycatch",
+          "catch": true,
+          "finally": false,
+          "branches": [
+            {
+              "id": "SQL_LIST",
+              "value": "try"
+            },
+            {
+              "id": "RETURN_ERROR",
+              "value": "catch"
+            }
+          ],
+          "__wwdescription": "Evita exponer detalles técnicos si la consulta de Auth falla."
+        },
+        "RETURN_LIST": {
+          "id": "RETURN_LIST",
+          "args": {
+            "body": {
+              "code": "return context.workflow['SQL_LIST'].result.rows[0].response",
+              "__wwtype": "js"
+            },
+            "status": 200,
+            "headers": {
+              "Cache-Control": "no-store"
+            },
+            "contentType": "application/json"
+          },
+          "name": "Responder responsables",
+          "next": null,
+          "type": "return-response",
+          "__wwdescription": "Entrega la lista mínima sin secretos, tokens ni datos internos de Auth."
+        },
+        "RETURN_ERROR": {
+          "id": "RETURN_ERROR",
+          "args": {
+            "body": {
+              "code": "INTERNAL_ERROR",
+              "message": "No fue posible cargar los responsables.",
+              "success": false
+            },
+            "status": 500,
+            "headers": {
+              "Cache-Control": "no-store"
+            },
+            "contentType": "application/json"
+          },
+          "name": "Responder error controlado",
+          "next": null,
+          "type": "return-response",
+          "__wwdescription": "Devuelve un mensaje seguro sin SQL ni stack trace."
+        }
+      },
+      "trigger": "ww-api"
+    },
+    {
+      "id": "14ac2d2c-b770-4eb8-a9ec-e0df78d5884d",
+      "name": "api_upload_archivo",
+      "type": "api",
+      "description": "Carga uno o varios archivos validados en WeWeb Storage Private y devuelve referencias para la creación atómica posterior.",
+      "parameters": [
+        {
+          "key": "file",
+          "name": "file",
+          "type": "file",
+          "multiple": true
+        },
+        {
+          "key": "submission_token",
+          "name": "submission_token",
+          "type": "string"
+        },
+        {
+          "key": "area_id",
+          "name": "area_id",
+          "type": "string"
+        },
+        {
+          "key": "tipo_servicio_id",
+          "name": "tipo_servicio_id",
+          "type": "string"
+        },
+        {
+          "key": "service_key",
+          "name": "service_key",
+          "type": "string"
+        },
+        {
+          "key": "categoria",
+          "name": "categoria",
+          "type": "string"
+        }
+      ],
+      "meta": {
+        "path": "/archivos/subir",
+        "method": "POST",
+        "security": {
+          "accessRule": "public",
+          "accessRoles": [],
+          "accessMiddlewares": [],
+          "accessRolesCondition": "OR"
+        }
+      },
+      "firstAction": "TRY_UPLOAD",
+      "firstErrorAction": null,
+      "actions": {
+        "TRY_UPLOAD": {
+          "id": "TRY_UPLOAD",
+          "name": "Ejecutar carga segura",
+          "next": null,
+          "type": "trycatch",
+          "catch": true,
+          "finally": false,
+          "branches": [
+            {
+              "id": "PREPARE_FILE",
+              "value": "try"
+            },
+            {
+              "id": "RETURN_INTERNAL_ERROR",
+              "value": "catch"
+            }
+          ],
+          "__wwdescription": "Captura errores técnicos sin exponer información interna."
+        },
+        "PREPARE_FILE": {
+          "id": "PREPARE_FILE",
+          "code": "// Validamos todos los archivos seleccionados con sus metadatos reales.\nconst submissionToken=String(context.parameters['submission_token']||'').trim();\nconst areaId=String(context.parameters['area_id']||'').trim();\nconst tipoServicioId=String(context.parameters['tipo_servicio_id']||'').trim();\nconst serviceKey=String(context.parameters['service_key']||'').trim();\nconst categoria=String(context.parameters['categoria']||'').trim();\nconst received=context.parameters['file'];\nconst files=Array.isArray(received)?received:(received?[received]:[]);\nconst uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;\nconst safe=/^[a-z0-9_]+$/;\nif(!uuid.test(submissionToken)||!uuid.test(areaId)||!uuid.test(tipoServicioId)||!safe.test(serviceKey)||!safe.test(categoria)||files.length===0){\n return {valid:false,code:'VALIDATION_ERROR',message:'Los identificadores o archivos de la carga no son válidos.'};\n}\nconst mimeByCategory={\n fotografia:['image/jpeg','image/png','image/webp'],logo:['image/jpeg','image/png','image/webp'],firma:['image/jpeg','image/png','image/webp'],\n video:['video/mp4','video/webm','video/quicktime'],\n documento:['application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','text/plain'],\n referencia:['image/jpeg','image/png','image/webp','application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','video/mp4','video/webm','video/quicktime','text/plain'],\n contenido_adicional:['image/jpeg','image/png','image/webp','application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','text/plain']\n};\nconst extensionByMime={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','application/pdf':'pdf','application/msword':'doc','application/vnd.openxmlformats-officedocument.wordprocessingml.document':'docx','application/vnd.ms-excel':'xls','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':'xlsx','video/mp4':'mp4','video/webm':'webm','video/quicktime':'mov','text/plain':'txt'};\nconst items=[];\nfor(const file of files){\n const originalName=String(file?.name||'').trim();\n const mimeType=String(file?.type||'').toLowerCase();\n const sizeBytes=Number(file?.size||0);\n if(!originalName||!mimeType||!Number.isFinite(sizeBytes)||sizeBytes<=0){\n  return {valid:false,code:'INVALID_FILE_METADATA',message:'No fue posible verificar nombre, tipo MIME y tamaño real de todos los archivos.'};\n }\n if(!mimeByCategory[categoria]?.includes(mimeType)){\n  return {valid:false,code:'FILE_TYPE_NOT_ALLOWED',message:'Uno de los tipos de archivo no está permitido para esta categoría.'};\n }\n const path=`pedidos/${submissionToken}/${serviceKey}/${categoria}/${crypto.randomUUID()}.${extensionByMime[mimeType]}`;\n items.push({file,path,nombre_original:originalName,mime_type:mimeType,size_bytes:sizeBytes,categoria});\n}\nreturn {valid:true,submissionToken,areaId,tipoServicioId,serviceKey,categoria,items};",
+          "name": "Validar archivo y generar ruta",
+          "next": "IF_INPUT_VALID",
+          "type": "custom-js",
+          "__wwdescription": "Valida metadatos reales, MIME e identificadores y genera una ruta privada no predecible."
+        },
+        "RETURN_UPLOAD": {
+          "id": "RETURN_UPLOAD",
+          "args": {
+            "body": {
+              "code": "const items=context.workflow['PREPARE_FILE'].result.items; const uploaded=context.workflow['UPLOAD_PRIVATE'].result.uploaded; return {success:true,archivos:items.map((item,index)=>({path:uploaded[index].path,nombre_original:item.nombre_original,mime_type:item.mime_type,size_bytes:item.size_bytes,categoria:item.categoria}))};",
+              "__wwtype": "js"
+            },
+            "status": 201,
+            "headers": {},
+            "contentType": "application/json"
+          },
+          "name": "Responder carga completa",
+          "next": null,
+          "type": "return-response",
+          "__wwdescription": "Devuelve las referencias privadas y metadatos reales de todos los archivos cargados."
+        },
+        "IF_INPUT_VALID": {
+          "id": "IF_INPUT_VALID",
+          "name": "¿Entrada válida?",
+          "next": null,
+          "type": "if",
+          "value": {
+            "code": "return context.workflow['PREPARE_FILE'].result.valid === true",
+            "__wwtype": "js"
+          },
+          "branches": [
+            {
+              "id": "VALIDATE_CATALOG",
+              "value": true
+            },
+            {
+              "id": "RETURN_INPUT_ERROR",
+              "value": false
+            }
+          ],
+          "__wwdescription": "Separa las cargas válidas de los rechazos controlados."
+        },
+        "UPLOAD_PRIVATE": {
+          "id": "UPLOAD_PRIVATE",
+          "args": {
+            "file": {
+              "code": "return context.workflow['PREPARE_FILE'].result.items[0].file",
+              "__wwtype": "js"
+            },
+            "mode": "multiple",
+            "path": {
+              "code": "return context.workflow['PREPARE_FILE'].result.items[0].path",
+              "__wwtype": "js"
+            },
+            "tags": {
+              "categoria": {
+                "code": "return context.workflow['PREPARE_FILE'].result.categoria",
+                "__wwtype": "js"
+              },
+              "service_key": {
+                "code": "return context.workflow['PREPARE_FILE'].result.serviceKey",
+                "__wwtype": "js"
+              },
+              "submission_token": {
+                "code": "return context.workflow['PREPARE_FILE'].result.submissionToken",
+                "__wwtype": "js"
+              }
+            },
+            "files": {
+              "code": "return context.workflow['PREPARE_FILE'].result.items.map(item=>({path:item.path,file:item.file}))",
+              "__wwtype": "js"
+            },
+            "access": "private",
+            "folder": "",
+            "replaceIfExists": false
+          },
+          "name": "Subir a Storage Private",
+          "next": "IF_UPLOAD_COMPLETE",
+          "type": "storage-put",
+          "__wwdescription": "Guarda el archivo exclusivamente en el espacio privado con una ruta aislada por submission token."
+        },
+        "IF_CATALOG_VALID": {
+          "id": "IF_CATALOG_VALID",
+          "name": "¿Catálogo válido?",
+          "next": null,
+          "type": "if",
+          "value": {
+            "code": "return context.workflow['VALIDATE_CATALOG'].result?.rows?.[0]?.response?.valid === true",
+            "__wwtype": "js"
+          },
+          "branches": [
+            {
+              "id": "UPLOAD_PRIVATE",
+              "value": true
+            },
+            {
+              "id": "RETURN_CATALOG_ERROR",
+              "value": false
+            }
+          ],
+          "__wwdescription": "Impide cargar archivos en servicios o categorías no autorizados."
+        },
+        "VALIDATE_CATALOG": {
+          "id": "VALIDATE_CATALOG",
+          "name": "Validar servicio y categoría",
+          "next": "IF_CATALOG_VALID",
+          "type": "sql-execute",
+          "query": "SELECT jsonb_build_object(\n  'valid',\n    a.id IS NOT NULL AND a.activo IS TRUE\n    AND t.id IS NOT NULL AND t.activo IS TRUE\n    AND t.area = a.id\n    AND t.slug = $service_key\n    AND CASE t.slug\n      WHEN 'flyer_rrss' THEN $categoria = ANY(ARRAY['contenido_adicional','fotografia','logo'])\n      WHEN 'invitacion_digital' THEN $categoria = ANY(ARRAY['contenido_adicional','fotografia','logo'])\n      WHEN 'invitacion_impresa' THEN $categoria = ANY(ARRAY['contenido_adicional','fotografia','logo'])\n      WHEN 'banner' THEN $categoria = ANY(ARRAY['contenido_adicional','fotografia','logo'])\n      WHEN 'afiche' THEN $categoria = ANY(ARRAY['contenido_adicional','fotografia','logo'])\n      WHEN 'folleto' THEN $categoria = ANY(ARRAY['contenido_adicional','fotografia','logo'])\n      WHEN 'certificado' THEN $categoria = ANY(ARRAY['contenido_adicional','logo','firma'])\n      WHEN 'cartel_externo' THEN $categoria = ANY(ARRAY['contenido_adicional','fotografia','logo'])\n      WHEN 'carteleria_senaletica' THEN $categoria = ANY(ARRAY['contenido_adicional','fotografia'])\n      WHEN 'ploteo_vehicular' THEN $categoria = ANY(ARRAY['contenido_adicional','fotografia','logo'])\n      WHEN 'ploteo_ventanas_edificio' THEN $categoria = ANY(ARRAY['contenido_adicional','fotografia','logo'])\n      WHEN 'web_recurso_grafico' THEN $categoria = ANY(ARRAY['contenido_adicional','fotografia','logo'])\n      WHEN 'produccion_audiovisual' THEN $categoria = ANY(ARRAY['video','documento','referencia'])\n      WHEN 'redes_sociales' THEN $categoria = ANY(ARRAY['fotografia','video','documento','logo','referencia'])\n      ELSE FALSE\n    END,\n  'code', 'FILE_CATEGORY_NOT_ALLOWED',\n  'message', 'La categoría de archivo no corresponde al servicio indicado.'\n) AS response\nFROM (SELECT 1) seed\nLEFT JOIN public.areas a ON a.id = $area_id::uuid\nLEFT JOIN public.tipos_servicio t ON t.id = $tipo_servicio_id::uuid;",
+          "params": {
+            "area_id": {
+              "code": "return context.workflow['PREPARE_FILE'].result.areaId",
+              "__wwtype": "js"
+            },
+            "categoria": {
+              "code": "return context.workflow['PREPARE_FILE'].result.categoria",
+              "__wwtype": "js"
+            },
+            "service_key": {
+              "code": "return context.workflow['PREPARE_FILE'].result.serviceKey",
+              "__wwtype": "js"
+            },
+            "tipo_servicio_id": {
+              "code": "return context.workflow['PREPARE_FILE'].result.tipoServicioId",
+              "__wwtype": "js"
+            }
+          },
+          "__wwdescription": "Comprueba en los catálogos activos que el área, servicio y categoría coinciden."
+        },
+        "IF_UPLOAD_COMPLETE": {
+          "id": "IF_UPLOAD_COMPLETE",
+          "name": "¿Carga completa?",
+          "next": null,
+          "type": "if",
+          "value": {
+            "code": "const r=context.workflow['UPLOAD_PRIVATE'].result; const expected=context.workflow['PREPARE_FILE'].result.items.length; return Array.isArray(r?.uploaded)&&r.uploaded.length===expected&&(!r.failed||r.failed.length===0);",
+            "__wwtype": "js"
+          },
+          "branches": [
+            {
+              "id": "RETURN_UPLOAD",
+              "value": true
+            },
+            {
+              "id": "CLEAN_PARTIAL_UPLOAD",
+              "value": false
+            }
+          ],
+          "__wwdescription": "Comprueba que todos los archivos se hayan guardado antes de devolver referencias."
+        },
+        "RETURN_INPUT_ERROR": {
+          "id": "RETURN_INPUT_ERROR",
+          "args": {
+            "body": {
+              "code": "const item=context.workflow['PREPARE_FILE'].result; return {success:false,code:item.code,message:item.message};",
+              "__wwtype": "js"
+            },
+            "status": 400,
+            "headers": {},
+            "contentType": "application/json"
+          },
+          "name": "Responder validación de archivo",
+          "next": null,
+          "type": "return-response",
+          "__wwdescription": "Informa un rechazo controlado del archivo."
+        },
+        "CLEAN_PARTIAL_UPLOAD": {
+          "id": "CLEAN_PARTIAL_UPLOAD",
+          "args": {
+            "paths": {
+              "code": "return (context.workflow['UPLOAD_PRIVATE'].result?.uploaded||[]).map(item=>item.path)",
+              "__wwtype": "js"
+            },
+            "access": "private"
+          },
+          "name": "Limpiar carga parcial",
+          "next": "RETURN_PARTIAL_ERROR",
+          "type": "storage-delete",
+          "__wwdescription": "Elimina cualquier archivo guardado si otro archivo del mismo lote falló."
+        },
+        "RETURN_CATALOG_ERROR": {
+          "id": "RETURN_CATALOG_ERROR",
+          "args": {
+            "body": {
+              "code": "return context.workflow['VALIDATE_CATALOG'].result.rows[0].response;",
+              "__wwtype": "js"
+            },
+            "status": 400,
+            "headers": {},
+            "contentType": "application/json"
+          },
+          "name": "Responder categoría no permitida",
+          "next": null,
+          "type": "return-response",
+          "__wwdescription": "Informa que el archivo no corresponde al catálogo autorizado."
+        },
+        "RETURN_PARTIAL_ERROR": {
+          "id": "RETURN_PARTIAL_ERROR",
+          "args": {
+            "body": {
+              "code": "UPLOAD_INCOMPLETE",
+              "message": "No fue posible cargar el lote completo. No se conservaron archivos parciales.",
+              "success": false
+            },
+            "status": 500,
+            "headers": {},
+            "contentType": "application/json"
+          },
+          "name": "Responder carga parcial",
+          "next": null,
+          "type": "return-response",
+          "__wwdescription": "Informa un error controlado después de limpiar el lote incompleto."
+        },
+        "RETURN_INTERNAL_ERROR": {
+          "id": "RETURN_INTERNAL_ERROR",
+          "args": {
+            "body": {
+              "code": "INTERNAL_ERROR",
+              "message": "No fue posible cargar el archivo.",
+              "success": false
+            },
+            "status": 500,
+            "headers": {},
+            "contentType": "application/json"
+          },
+          "name": "Responder error interno",
+          "next": null,
+          "type": "return-response",
+          "__wwdescription": "Devuelve un error genérico sin stack trace."
+        }
+      },
+      "trigger": "ww-api"
+    }
+  ],
+  "securityNote": "SQL y código incluidos porque son configuración técnica y no contienen filas ni valores de secretos."
+}

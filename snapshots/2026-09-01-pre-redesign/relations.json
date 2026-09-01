@@ -1,0 +1,75 @@
+{
+  "snapshot": "2026-09-01-pre-redesign",
+  "generatedAt": "2026-09-01",
+  "source": "WeWeb MCP (read-only)",
+  "workspace": "Drive Gobierno's workspace",
+  "project": "My project",
+  "projectId": "5791a02a-c0b8-49dc-a5b6-afe5fbb53b60",
+  "environment": "Editor environment",
+  "relations": [
+    {
+      "from": "public.archivos.servicio",
+      "to": "public.servicios_solicitados.id",
+      "implementation": "foreign key / Link to Another Record",
+      "required": true
+    },
+    {
+      "from": "public.archivos.subido_por",
+      "to": "auth.users.id",
+      "implementation": "foreign key / Link to Another Record",
+      "required": false
+    },
+    {
+      "from": "public.archivos.archivo",
+      "to": "storage.privateFiles.path",
+      "implementation": "foreign key / Link to Another Record",
+      "required": true
+    },
+    {
+      "from": "public.pedidos.creado_por",
+      "to": "auth.users.id",
+      "implementation": "foreign key / Link to Another Record",
+      "required": false
+    },
+    {
+      "from": "public.servicios_solicitados.pedido",
+      "to": "public.pedidos.id",
+      "implementation": "foreign key / Link to Another Record",
+      "required": true
+    },
+    {
+      "from": "public.servicios_solicitados.tipo_servicio",
+      "to": "public.tipos_servicio.id",
+      "implementation": "foreign key / Link to Another Record",
+      "required": true
+    },
+    {
+      "from": "public.servicios_solicitados.area",
+      "to": "public.areas.id",
+      "implementation": "foreign key / Link to Another Record",
+      "required": true
+    },
+    {
+      "from": "public.servicios_solicitados.responsable",
+      "to": "auth.users.id",
+      "implementation": "foreign key / Link to Another Record",
+      "required": false
+    },
+    {
+      "from": "public.tipos_servicio.area",
+      "to": "public.areas.id",
+      "implementation": "foreign key / Link to Another Record",
+      "required": true
+    }
+  ],
+  "logicalRules": [
+    {
+      "relationship": "pedidos 1:N servicios_solicitados",
+      "note": "Compatibilidad física e histórica; cardinalidad efectiva 1:1 para PED nuevos."
+    },
+    {
+      "relationship": "archivo → servicio → PED",
+      "note": "Los archivos privados se vinculan al servicio correspondiente."
+    }
+  ]
+}

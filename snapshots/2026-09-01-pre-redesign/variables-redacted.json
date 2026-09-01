@@ -1,0 +1,255 @@
+{
+  "snapshot": "2026-09-01-pre-redesign",
+  "generatedAt": "2026-09-01",
+  "source": "WeWeb MCP (read-only)",
+  "workspace": "Drive Gobierno's workspace",
+  "project": "My project",
+  "projectId": "5791a02a-c0b8-49dc-a5b6-afe5fbb53b60",
+  "environment": "Editor environment",
+  "variables": [
+    {
+      "id": "42dabee4-e243-454b-85c7-f146546bb13d",
+      "name": "wizardStep",
+      "description": "Paso actual del wizard de nueva solicitud.",
+      "type": "number",
+      "path": "variables['42dabee4-e243-454b-85c7-f146546bb13d']",
+      "defaultConfigured": true,
+      "defaultValue": "[REDACTED]"
+    },
+    {
+      "id": "d629c094-3efb-45c0-bfc7-e819defc53a1",
+      "name": "pedidoDraft",
+      "description": "Datos generales agrupados del pedido en edición.",
+      "type": "object",
+      "path": "variables['d629c094-3efb-45c0-bfc7-e819defc53a1']",
+      "defaultConfigured": true,
+      "defaultValue": "[REDACTED]"
+    },
+    {
+      "id": "0f8165f8-e41b-49bf-9846-2e143ef72370",
+      "name": "selectedAreas",
+      "description": "Áreas activas seleccionadas, conservando id, slug y nombre.",
+      "type": "array",
+      "path": "variables['0f8165f8-e41b-49bf-9846-2e143ef72370']",
+      "defaultConfigured": true,
+      "defaultValue": "[REDACTED]"
+    },
+    {
+      "id": "b2bfecfa-c7c5-479a-ad7f-5ef51542ff0f",
+      "name": "selectedServices",
+      "description": "Servicios activos seleccionados, cada uno con área y tipo propios.",
+      "type": "array",
+      "path": "variables['b2bfecfa-c7c5-479a-ad7f-5ef51542ff0f']",
+      "defaultConfigured": true,
+      "defaultValue": "[REDACTED]"
+    },
+    {
+      "id": "f7aaa261-e3b1-4aa1-855b-649ff8dca663",
+      "name": "serviceDrafts",
+      "description": "Borradores independientes indexados por slug de servicio.",
+      "type": "object",
+      "path": "variables['f7aaa261-e3b1-4aa1-855b-649ff8dca663']",
+      "defaultConfigured": true,
+      "defaultValue": "[REDACTED]"
+    },
+    {
+      "id": "3a3e0b80-4707-4eb1-b909-a7838a963f22",
+      "name": "validationErrors",
+      "description": "Errores frontend agrupados por paso, servicio y campo.",
+      "type": "object",
+      "path": "variables['3a3e0b80-4707-4eb1-b909-a7838a963f22']",
+      "defaultConfigured": true,
+      "defaultValue": "[REDACTED]"
+    },
+    {
+      "id": "7e895de4-ac5f-406a-abc5-f627aea2c1e3",
+      "name": "loginLoading",
+      "description": "Estado de carga del acceso con WeWeb Auth.",
+      "type": "boolean",
+      "path": "variables['7e895de4-ac5f-406a-abc5-f627aea2c1e3']",
+      "defaultConfigured": true,
+      "defaultValue": "[REDACTED]"
+    },
+    {
+      "id": "9851c1e0-aa90-487b-9fb6-182c59e6616a",
+      "name": "loginError",
+      "description": "Mensaje público y controlado cuando falla el acceso.",
+      "type": "string",
+      "path": "variables['9851c1e0-aa90-487b-9fb6-182c59e6616a']",
+      "defaultConfigured": false,
+      "defaultValue": "[REDACTED]"
+    },
+    {
+      "id": "f4f4c552-5f93-4841-a152-ca84bf73135a",
+      "name": "isLoadingGestion",
+      "description": "Estado de carga controlado del panel.",
+      "type": "boolean",
+      "path": "variables['f4f4c552-5f93-4841-a152-ca84bf73135a']",
+      "defaultConfigured": true,
+      "defaultValue": "[REDACTED]"
+    },
+    {
+      "id": "cf2a920f-2439-4e4a-ae8d-9ce8e6371aac",
+      "name": "tablePageSize",
+      "description": "Cantidad de servicios por página en la View interna.",
+      "type": "number",
+      "path": "variables['cf2a920f-2439-4e4a-ae8d-9ce8e6371aac']",
+      "defaultConfigured": true,
+      "defaultValue": "[REDACTED]"
+    },
+    {
+      "id": "14fbd469-468e-446b-9725-269edc173446",
+      "name": "tablePage",
+      "description": "Página actual del listado interno.",
+      "type": "number",
+      "path": "variables['14fbd469-468e-446b-9725-269edc173446']",
+      "defaultConfigured": true,
+      "defaultValue": "[REDACTED]"
+    },
+    {
+      "id": "e43c5534-1ba8-41be-9281-685a25b2d567",
+      "name": "filters",
+      "description": "Filtros aplicados server-side a vw_servicios_gestion.",
+      "type": "object",
+      "path": "variables['e43c5534-1ba8-41be-9281-685a25b2d567']",
+      "defaultConfigured": true,
+      "defaultValue": "[REDACTED]"
+    },
+    {
+      "id": "f9caf70d-eab7-461e-90c9-999fb846488a",
+      "name": "responsables",
+      "description": "Usuarios internos devueltos por api_listar_responsables.",
+      "type": "array",
+      "path": "variables['f9caf70d-eab7-461e-90c9-999fb846488a']",
+      "defaultConfigured": true,
+      "defaultValue": "[REDACTED]"
+    },
+    {
+      "id": "aa28d15e-9ea1-4a13-9b21-51b9096090c7",
+      "name": "gestionAuthorized",
+      "description": "Guardia visual posterior a validar sesión y rol; no reemplaza la seguridad backend.",
+      "type": "boolean",
+      "path": "variables['aa28d15e-9ea1-4a13-9b21-51b9096090c7']",
+      "defaultConfigured": true,
+      "defaultValue": "[REDACTED]"
+    },
+    {
+      "id": "bf59f9c7-35a1-4277-a655-dadfb671eb21",
+      "name": "gestionError",
+      "description": "Mensaje público y controlado del listado.",
+      "type": "string",
+      "path": "variables['bf59f9c7-35a1-4277-a655-dadfb671eb21']",
+      "defaultConfigured": false,
+      "defaultValue": "[REDACTED]"
+    },
+    {
+      "id": "f063acb8-3eeb-47f6-b25d-3bce523561a4",
+      "name": "selectedPedidoId",
+      "description": "UUID técnico del pedido abierto; nunca se muestra al usuario.",
+      "type": "string",
+      "path": "variables['f063acb8-3eeb-47f6-b25d-3bce523561a4']",
+      "defaultConfigured": false,
+      "defaultValue": "[REDACTED]"
+    },
+    {
+      "id": "c8a42ff1-b755-41ed-a2bd-9d6e491195fc",
+      "name": "isLoadingPedido",
+      "description": "Estado de carga del detalle interno.",
+      "type": "boolean",
+      "path": "variables['c8a42ff1-b755-41ed-a2bd-9d6e491195fc']",
+      "defaultConfigured": true,
+      "defaultValue": "[REDACTED]"
+    },
+    {
+      "id": "4222205d-b2bf-44c2-896c-2c68ab224ae7",
+      "name": "isUpdating",
+      "description": "Evita actualizaciones duplicadas de servicios.",
+      "type": "boolean",
+      "path": "variables['4222205d-b2bf-44c2-896c-2c68ab224ae7']",
+      "defaultConfigured": true,
+      "defaultValue": "[REDACTED]"
+    },
+    {
+      "id": "4c6c7f1a-f50f-4e6e-bc33-1f3a44a58c9f",
+      "name": "serviceEdits",
+      "description": "Borradores independientes de estado, responsable y observaciones por servicio.",
+      "type": "object",
+      "path": "variables['4c6c7f1a-f50f-4e6e-bc33-1f3a44a58c9f']",
+      "defaultConfigured": true,
+      "defaultValue": "[REDACTED]"
+    },
+    {
+      "id": "2e0372e0-5ae8-4718-9d6f-7d97c26cefb3",
+      "name": "pedidoDetailError",
+      "description": "Mensaje público y controlado del detalle.",
+      "type": "string",
+      "path": "variables['2e0372e0-5ae8-4718-9d6f-7d97c26cefb3']",
+      "defaultConfigured": false,
+      "defaultValue": "[REDACTED]"
+    },
+    {
+      "id": "7f32b768-ec34-42a6-a1eb-44c7e1ec8a46",
+      "name": "fileOpeningId",
+      "description": "ID del archivo privado cuya URL temporal se está generando.",
+      "type": "string",
+      "path": "variables['7f32b768-ec34-42a6-a1eb-44c7e1ec8a46']",
+      "defaultConfigured": false,
+      "defaultValue": "[REDACTED]"
+    },
+    {
+      "id": "697b215c-d5aa-4ede-9c9b-621d3034eb95",
+      "name": "fileError",
+      "description": "Mensaje público al abrir un archivo privado.",
+      "type": "string",
+      "path": "variables['697b215c-d5aa-4ede-9c9b-621d3034eb95']",
+      "defaultConfigured": false,
+      "defaultValue": "[REDACTED]"
+    },
+    {
+      "id": "426a3428-1b5c-4a94-8510-9f07cf4a1fac",
+      "name": "updateMessage",
+      "description": "Feedback público de guardado por servicio.",
+      "type": "string",
+      "path": "variables['426a3428-1b5c-4a94-8510-9f07cf4a1fac']",
+      "defaultConfigured": false,
+      "defaultValue": "[REDACTED]"
+    },
+    {
+      "id": "5b18c8f5-910a-4b52-8c72-6c29bd4c2b2d",
+      "name": "showIntro",
+      "description": "Controla la portada inicial “Formulario de pedidos” sin alterar el paso ni los borradores del wizard.",
+      "type": "boolean",
+      "path": "variables['5b18c8f5-910a-4b52-8c72-6c29bd4c2b2d']",
+      "defaultConfigured": true,
+      "defaultValue": "[REDACTED]"
+    },
+    {
+      "id": "1116238b-c873-4841-ae0d-5e14676a77a2",
+      "name": "submitResult",
+      "description": "Respuesta real del endpoint con un pedido creado por cada servicio solicitado.",
+      "type": "object",
+      "path": "variables['1116238b-c873-4841-ae0d-5e14676a77a2']",
+      "defaultConfigured": true,
+      "defaultValue": "[REDACTED]"
+    },
+    {
+      "id": "15744742-a615-49c7-a582-754a7bbeb6bf",
+      "name": "isSubmitting",
+      "description": "Indica que la solicitud se está validando y persistiendo para evitar envíos duplicados.",
+      "type": "boolean",
+      "path": "variables['15744742-a615-49c7-a582-754a7bbeb6bf']",
+      "defaultConfigured": true,
+      "defaultValue": "[REDACTED]"
+    },
+    {
+      "id": "d2b3858b-e236-4a97-ad7f-d8073514afa1",
+      "name": "submissionToken",
+      "description": "UUID base único del envío completo, usado por backend para derivar un token idempotente por servicio.",
+      "type": "string",
+      "path": "variables['d2b3858b-e236-4a97-ad7f-d8073514afa1']",
+      "defaultConfigured": false,
+      "defaultValue": "[REDACTED]"
+    }
+  ],
+  "redaction": "Todos los valores/defaults se omiten deliberadamente."
+}

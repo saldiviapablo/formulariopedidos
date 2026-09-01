@@ -1,0 +1,741 @@
+{
+  "snapshot": "2026-09-01-pre-redesign",
+  "generatedAt": "2026-09-01",
+  "source": "WeWeb MCP (read-only)",
+  "workspace": "Drive Gobierno's workspace",
+  "project": "My project",
+  "projectId": "5791a02a-c0b8-49dc-a5b6-afe5fbb53b60",
+  "environment": "Editor environment",
+  "endpoints": [
+    {
+      "id": "ec935c4c-4c71-4d1a-9ea5-fecc8b908312",
+      "name": "api_actualizar_servicio",
+      "description": "Actualiza exclusivamente estado, responsable y observaciones internas de un servicio, valida responsables internos y refresca updatedAt; acceso restringido al equipo interno.",
+      "method": "PATCH",
+      "path": "/servicios/actualizar",
+      "access": {
+        "accessRule": "authenticated",
+        "accessRoles": [
+          "equipo_interno",
+          "admin"
+        ],
+        "accessMiddlewares": [],
+        "accessRolesCondition": "OR"
+      },
+      "inputs": [
+        {
+          "key": "payload",
+          "name": "payload",
+          "type": "object"
+        }
+      ],
+      "firstAction": "TRY_UPDATE",
+      "actions": [
+        {
+          "id": "SQL_UPDATE",
+          "name": "Validar y actualizar servicio",
+          "type": "sql-execute",
+          "next": "RETURN_UPDATE",
+          "description": "Valida el payload y actualiza únicamente los campos expresamente permitidos."
+        },
+        {
+          "id": "TRY_UPDATE",
+          "name": "Ejecutar actualización segura",
+          "type": "trycatch",
+          "next": null,
+          "description": "Captura cualquier error técnico inesperado sin exponer detalles internos."
+        },
+        {
+          "id": "RETURN_UPDATE",
+          "name": "Responder resultado de actualización",
+          "type": "return-response",
+          "next": null,
+          "description": "Devuelve la respuesta controlada de la actualización."
+        },
+        {
+          "id": "RETURN_INTERNAL_ERROR",
+          "name": "Responder error interno",
+          "type": "return-response",
+          "next": null,
+          "description": "Devuelve un error genérico sin stack trace cuando ocurre un fallo técnico inesperado."
+        }
+      ],
+      "validationCodes": [
+        "AUTH_REQUIRED",
+        "VALIDATION_ERROR",
+        "FORBIDDEN_FIELDS",
+        "INVALID_STATUS",
+        "INVALID_RESPONSIBLE",
+        "RESPONSIBLE_NOT_FOUND",
+        "RESPONSIBLE_FORBIDDEN",
+        "NOT_FOUND"
+      ],
+      "responseImplementation": [
+        {
+          "actionId": "RETURN_UPDATE",
+          "status": {
+            "code": "const result = context.workflow['SQL_UPDATE'].result?.rows?.[0]?.response; if (result?.success) return 200; if (result?.code === 'NOT_FOUND') return 404; if (result?.code === 'AUTH_REQUIRED') return 401; return 400;",
+            "__wwtype": "js"
+          },
+          "body": {
+            "code": "return context.workflow['SQL_UPDATE'].result.rows[0].response",
+            "__wwtype": "js"
+          },
+          "contentType": "application/json"
+        },
+        {
+          "actionId": "RETURN_INTERNAL_ERROR",
+          "status": 500,
+          "body": {
+            "code": "INTERNAL_ERROR",
+            "message": "No fue posible actualizar el servicio.",
+            "success": false
+          },
+          "contentType": "application/json"
+        }
+      ],
+      "dependencies": {
+        "publicTables": [
+          "servicios_solicitados"
+        ],
+        "authUsers": true,
+        "privateStorage": false
+      }
+    },
+    {
+      "id": "819b8329-94b8-4a7d-929f-ce7a477c9161",
+      "name": "api_crear_pedido_completo",
+      "description": "Crea atómicamente un PED por servicio solicitado, con numeración consecutiva, idempotencia por token base y archivos privados.",
+      "method": "POST",
+      "path": "/pedidos/crear-completo",
+      "access": {
+        "accessRule": "public",
+        "accessRoles": [],
+        "accessMiddlewares": [],
+        "accessRolesCondition": "OR"
+      },
+      "inputs": [
+        {
+          "key": "payload",
+          "name": "payload",
+          "type": "object"
+        }
+      ],
+      "firstAction": "TRY_CREATE",
+      "actions": [
+        {
+          "id": "SQL_CREATE",
+          "name": "Validar y crear pedido completo",
+          "type": "sql-execute",
+          "next": "RETURN_CREATE",
+          "description": "Valida y crea un PED independiente por servicio, con numeración por orden de payload, archivos vinculados y una única operación SQL atómica."
+        },
+        {
+          "id": "TRY_CREATE",
+          "name": "Ejecutar creación segura",
+          "type": "trycatch",
+          "next": null,
+          "description": "Captura cualquier error técnico inesperado sin exponer detalles internos."
+        },
+        {
+          "id": "RETURN_CREATE",
+          "name": "Responder resultado de creación",
+          "type": "return-response",
+          "next": null,
+          "description": "Devuelve al cliente únicamente la respuesta controlada producida por la operación atómica."
+        },
+        {
+          "id": "RETURN_INTERNAL_ERROR",
+          "name": "Responder error interno",
+          "type": "return-response",
+          "next": null,
+          "description": "Devuelve un error genérico sin stack trace cuando ocurre un fallo técnico inesperado."
+        }
+      ],
+      "validationCodes": [
+        "VALIDATION_ERROR",
+        "FORBIDDEN_FIELDS",
+        "INVALID_SUBMISSION_TOKEN",
+        "SUBMISSION_TOKEN_USED",
+        "INVALID_FILES",
+        "FORBIDDEN_FILE_FIELDS",
+        "INVALID_FILE_METADATA",
+        "INVALID_STORAGE_PATH",
+        "FILE_TYPE_NOT_ALLOWED",
+        "FILE_CATEGORY_NOT_ALLOWED",
+        "DUPLICATE_FILE",
+        "FILE_NOT_FOUND",
+        "FILE_METADATA_MISMATCH",
+        "DUPLICATE_SERVICE",
+        "AREA_NOT_FOUND",
+        "AREA_INACTIVE",
+        "AREA_NOT_ALLOWED",
+        "SERVICE_NOT_FOUND",
+        "SERVICE_INACTIVE",
+        "INVALID_AREA_SERVICE",
+        "AREA_WITHOUT_SERVICE",
+        "SERVICE_AREA_NOT_SELECTED",
+        "INVALID_FLYER_DATE",
+        "INVALID_GENERAL_DATE",
+        "INVITATION_APPROVAL_REQUIRED",
+        "INVALID_CERTIFICATE_SIGNERS",
+        "INVALID_TIME_FORMAT",
+        "INVALID_OPTIONAL_URL",
+        "INVALID_SOCIAL_CONTENT_TYPES",
+        "INVALID_SOCIAL_URL",
+        "INVALID_AUDIOVISUAL_TIME"
+      ],
+      "responseImplementation": [
+        {
+          "actionId": "RETURN_CREATE",
+          "status": {
+            "code": "const result = context.workflow['SQL_CREATE'].result?.rows?.[0]?.response; if (result?.success) return 200; if (result?.code === 'SUBMISSION_TOKEN_USED') return 409; return 400;",
+            "__wwtype": "js"
+          },
+          "body": {
+            "code": "return context.workflow['SQL_CREATE'].result.rows[0].response",
+            "__wwtype": "js"
+          },
+          "contentType": "application/json"
+        },
+        {
+          "actionId": "RETURN_INTERNAL_ERROR",
+          "status": 500,
+          "body": {
+            "code": "INTERNAL_ERROR",
+            "message": "No fue posible crear el pedido completo.",
+            "success": false
+          },
+          "contentType": "application/json"
+        }
+      ],
+      "dependencies": {
+        "publicTables": [
+          "areas",
+          "tipos_servicio",
+          "pedidos",
+          "secuencias",
+          "servicios_solicitados",
+          "archivos"
+        ],
+        "authUsers": false,
+        "privateStorage": true
+      }
+    },
+    {
+      "id": "dac4f443-97ed-4825-9727-e060ce9973e9",
+      "name": "api_delete_temp_file",
+      "description": "Elimina de Storage Private una carga temporal limitada estrictamente a su submission token, servicio y categoría.",
+      "method": "DELETE",
+      "path": "/archivos/temporal",
+      "access": {
+        "accessRule": "public",
+        "accessRoles": [],
+        "accessMiddlewares": [],
+        "accessRolesCondition": "OR"
+      },
+      "inputs": [
+        {
+          "key": "submission_token",
+          "name": "submission_token",
+          "type": "string"
+        },
+        {
+          "key": "service_key",
+          "name": "service_key",
+          "type": "string"
+        },
+        {
+          "key": "categoria",
+          "name": "categoria",
+          "type": "string"
+        },
+        {
+          "key": "path",
+          "name": "path",
+          "type": "string"
+        }
+      ],
+      "firstAction": "TRY_DELETE",
+      "actions": [
+        {
+          "id": "TRY_DELETE",
+          "name": "Ejecutar limpieza segura",
+          "type": "trycatch",
+          "next": null,
+          "description": "Captura errores técnicos durante la eliminación temporal."
+        },
+        {
+          "id": "IF_PATH_VALID",
+          "name": "¿Ruta temporal válida?",
+          "type": "if",
+          "next": null,
+          "description": "Solo permite continuar con una referencia privada que cumpla el namespace seguro."
+        },
+        {
+          "id": "VALIDATE_PATH",
+          "name": "Validar namespace temporal",
+          "type": "custom-js",
+          "next": "IF_PATH_VALID",
+          "description": "Impide recibir una ruta arbitraria y restringe el borrado al token, servicio y categoría declarados."
+        },
+        {
+          "id": "DELETE_PRIVATE",
+          "name": "Eliminar archivo privado temporal",
+          "type": "storage-delete",
+          "next": "RETURN_DELETED",
+          "description": "Elimina exclusivamente la ruta privada validada."
+        },
+        {
+          "id": "RETURN_DELETED",
+          "name": "Confirmar limpieza",
+          "type": "return-response",
+          "next": null,
+          "description": "Confirma que la referencia temporal fue eliminada."
+        },
+        {
+          "id": "RETURN_PATH_ERROR",
+          "name": "Rechazar ruta insegura",
+          "type": "return-response",
+          "next": null,
+          "description": "Rechaza cualquier ruta que no pertenezca exactamente al namespace temporal esperado."
+        },
+        {
+          "id": "RETURN_INTERNAL_ERROR",
+          "name": "Responder error interno",
+          "type": "return-response",
+          "next": null,
+          "description": "Devuelve un error genérico sin revelar detalles."
+        }
+      ],
+      "validationCodes": [],
+      "responseImplementation": [
+        {
+          "actionId": "RETURN_DELETED",
+          "status": 200,
+          "body": {
+            "success": true
+          },
+          "contentType": "application/json"
+        },
+        {
+          "actionId": "RETURN_PATH_ERROR",
+          "status": 400,
+          "body": {
+            "code": "INVALID_STORAGE_PATH",
+            "message": "La referencia temporal no es válida.",
+            "success": false
+          },
+          "contentType": "application/json"
+        },
+        {
+          "actionId": "RETURN_INTERNAL_ERROR",
+          "status": 500,
+          "body": {
+            "code": "INTERNAL_ERROR",
+            "message": "No fue posible limpiar el archivo temporal.",
+            "success": false
+          },
+          "contentType": "application/json"
+        }
+      ],
+      "dependencies": {
+        "publicTables": [],
+        "authUsers": false,
+        "privateStorage": true
+      }
+    },
+    {
+      "id": "9b59d32a-6460-4911-a64a-84e753b7b684",
+      "name": "api_get_signed_file_url",
+      "description": "Genera una URL temporal para un archivo privado persistido, exclusivamente para equipo interno y administradores.",
+      "method": "POST",
+      "path": "/archivos/signed-url",
+      "access": {
+        "accessRule": "authenticated",
+        "accessRoles": [
+          "equipo_interno",
+          "admin"
+        ],
+        "accessMiddlewares": [],
+        "accessRolesCondition": "OR"
+      },
+      "inputs": [
+        {
+          "key": "archivo_id",
+          "name": "archivo_id",
+          "type": "string"
+        }
+      ],
+      "firstAction": "TRY_SIGN",
+      "actions": [
+        {
+          "id": "TRY_SIGN",
+          "name": "Generar acceso seguro",
+          "type": "trycatch",
+          "next": null,
+          "description": "Captura errores técnicos sin revelar rutas privadas."
+        },
+        {
+          "id": "FIND_FILE",
+          "name": "Validar archivo persistido",
+          "type": "sql-execute",
+          "next": "IF_FILE_FOUND",
+          "description": "Busca el archivo por identificador y comprueba que la referencia nativa coincida con storage_path."
+        },
+        {
+          "id": "IF_FILE_FOUND",
+          "name": "¿Archivo disponible?",
+          "type": "if",
+          "next": null,
+          "description": "Solo genera una URL para una referencia persistida y válida."
+        },
+        {
+          "id": "SIGN_PRIVATE_URL",
+          "name": "Firmar URL privada",
+          "type": "storage-get-signed-url",
+          "next": "RETURN_SIGNED_URL",
+          "description": "Genera un acceso de lectura temporal de 60 segundos sin exponer la ruta en la respuesta."
+        },
+        {
+          "id": "RETURN_FILE_ERROR",
+          "name": "Responder archivo inexistente",
+          "type": "return-response",
+          "next": null,
+          "description": "Devuelve un error controlado sin exponer información privada."
+        },
+        {
+          "id": "RETURN_SIGNED_URL",
+          "name": "Responder URL firmada",
+          "type": "return-response",
+          "next": null,
+          "description": "Entrega solamente la URL temporal al usuario interno autorizado."
+        },
+        {
+          "id": "RETURN_INTERNAL_ERROR",
+          "name": "Responder error interno",
+          "type": "return-response",
+          "next": null,
+          "description": "Devuelve un error genérico sin stack trace."
+        }
+      ],
+      "validationCodes": [
+        "VALIDATION_ERROR",
+        "FILE_NOT_FOUND"
+      ],
+      "responseImplementation": [
+        {
+          "actionId": "RETURN_FILE_ERROR",
+          "status": {
+            "code": "return context.workflow['FIND_FILE'].result.rows[0].response.code === 'VALIDATION_ERROR' ? 400 : 404",
+            "__wwtype": "js"
+          },
+          "body": {
+            "code": "const r=context.workflow['FIND_FILE'].result.rows[0].response; return {success:false,code:r.code,message:r.message};",
+            "__wwtype": "js"
+          },
+          "contentType": "application/json"
+        },
+        {
+          "actionId": "RETURN_SIGNED_URL",
+          "status": 200,
+          "body": {
+            "code": "const result=context.workflow['SIGN_PRIVATE_URL'].result; const url=typeof result==='string'?result:result?.url; return {success:true,url,expires_in:60};",
+            "__wwtype": "js"
+          },
+          "contentType": "application/json"
+        },
+        {
+          "actionId": "RETURN_INTERNAL_ERROR",
+          "status": 500,
+          "body": {
+            "code": "INTERNAL_ERROR",
+            "message": "No fue posible generar el acceso temporal.",
+            "success": false
+          },
+          "contentType": "application/json"
+        }
+      ],
+      "dependencies": {
+        "publicTables": [
+          "archivos"
+        ],
+        "authUsers": false,
+        "privateStorage": true
+      }
+    },
+    {
+      "id": "565645b9-79e5-4981-bdd4-763cf076601b",
+      "name": "api_listar_responsables",
+      "description": "Lista de forma segura únicamente usuarios de WeWeb Auth con rol equipo_interno o admin, exponiendo solo id, nombre visible y email.",
+      "method": "GET",
+      "path": "/responsables/listar",
+      "access": {
+        "accessRule": "authenticated",
+        "accessRoles": [
+          "equipo_interno",
+          "admin"
+        ],
+        "accessMiddlewares": [],
+        "accessRolesCondition": "OR"
+      },
+      "inputs": [],
+      "firstAction": "TRY_LIST",
+      "actions": [
+        {
+          "id": "SQL_LIST",
+          "name": "Consultar usuarios internos",
+          "type": "sql-execute",
+          "next": "RETURN_LIST",
+          "description": "Filtra autoritativamente por los roles internos almacenados por WeWeb Auth y devuelve solo campos de identificación."
+        },
+        {
+          "id": "TRY_LIST",
+          "name": "Listar responsables con manejo seguro",
+          "type": "trycatch",
+          "next": null,
+          "description": "Evita exponer detalles técnicos si la consulta de Auth falla."
+        },
+        {
+          "id": "RETURN_LIST",
+          "name": "Responder responsables",
+          "type": "return-response",
+          "next": null,
+          "description": "Entrega la lista mínima sin secretos, tokens ni datos internos de Auth."
+        },
+        {
+          "id": "RETURN_ERROR",
+          "name": "Responder error controlado",
+          "type": "return-response",
+          "next": null,
+          "description": "Devuelve un mensaje seguro sin SQL ni stack trace."
+        }
+      ],
+      "validationCodes": [],
+      "responseImplementation": [
+        {
+          "actionId": "RETURN_LIST",
+          "status": 200,
+          "body": {
+            "code": "return context.workflow['SQL_LIST'].result.rows[0].response",
+            "__wwtype": "js"
+          },
+          "contentType": "application/json"
+        },
+        {
+          "actionId": "RETURN_ERROR",
+          "status": 500,
+          "body": {
+            "code": "INTERNAL_ERROR",
+            "message": "No fue posible cargar los responsables.",
+            "success": false
+          },
+          "contentType": "application/json"
+        }
+      ],
+      "dependencies": {
+        "publicTables": [],
+        "authUsers": true,
+        "privateStorage": false
+      }
+    },
+    {
+      "id": "14ac2d2c-b770-4eb8-a9ec-e0df78d5884d",
+      "name": "api_upload_archivo",
+      "description": "Carga uno o varios archivos validados en WeWeb Storage Private y devuelve referencias para la creación atómica posterior.",
+      "method": "POST",
+      "path": "/archivos/subir",
+      "access": {
+        "accessRule": "public",
+        "accessRoles": [],
+        "accessMiddlewares": [],
+        "accessRolesCondition": "OR"
+      },
+      "inputs": [
+        {
+          "key": "file",
+          "name": "file",
+          "type": "file",
+          "multiple": true
+        },
+        {
+          "key": "submission_token",
+          "name": "submission_token",
+          "type": "string"
+        },
+        {
+          "key": "area_id",
+          "name": "area_id",
+          "type": "string"
+        },
+        {
+          "key": "tipo_servicio_id",
+          "name": "tipo_servicio_id",
+          "type": "string"
+        },
+        {
+          "key": "service_key",
+          "name": "service_key",
+          "type": "string"
+        },
+        {
+          "key": "categoria",
+          "name": "categoria",
+          "type": "string"
+        }
+      ],
+      "firstAction": "TRY_UPLOAD",
+      "actions": [
+        {
+          "id": "TRY_UPLOAD",
+          "name": "Ejecutar carga segura",
+          "type": "trycatch",
+          "next": null,
+          "description": "Captura errores técnicos sin exponer información interna."
+        },
+        {
+          "id": "PREPARE_FILE",
+          "name": "Validar archivo y generar ruta",
+          "type": "custom-js",
+          "next": "IF_INPUT_VALID",
+          "description": "Valida metadatos reales, MIME e identificadores y genera una ruta privada no predecible."
+        },
+        {
+          "id": "RETURN_UPLOAD",
+          "name": "Responder carga completa",
+          "type": "return-response",
+          "next": null,
+          "description": "Devuelve las referencias privadas y metadatos reales de todos los archivos cargados."
+        },
+        {
+          "id": "IF_INPUT_VALID",
+          "name": "¿Entrada válida?",
+          "type": "if",
+          "next": null,
+          "description": "Separa las cargas válidas de los rechazos controlados."
+        },
+        {
+          "id": "UPLOAD_PRIVATE",
+          "name": "Subir a Storage Private",
+          "type": "storage-put",
+          "next": "IF_UPLOAD_COMPLETE",
+          "description": "Guarda el archivo exclusivamente en el espacio privado con una ruta aislada por submission token."
+        },
+        {
+          "id": "IF_CATALOG_VALID",
+          "name": "¿Catálogo válido?",
+          "type": "if",
+          "next": null,
+          "description": "Impide cargar archivos en servicios o categorías no autorizados."
+        },
+        {
+          "id": "VALIDATE_CATALOG",
+          "name": "Validar servicio y categoría",
+          "type": "sql-execute",
+          "next": "IF_CATALOG_VALID",
+          "description": "Comprueba en los catálogos activos que el área, servicio y categoría coinciden."
+        },
+        {
+          "id": "IF_UPLOAD_COMPLETE",
+          "name": "¿Carga completa?",
+          "type": "if",
+          "next": null,
+          "description": "Comprueba que todos los archivos se hayan guardado antes de devolver referencias."
+        },
+        {
+          "id": "RETURN_INPUT_ERROR",
+          "name": "Responder validación de archivo",
+          "type": "return-response",
+          "next": null,
+          "description": "Informa un rechazo controlado del archivo."
+        },
+        {
+          "id": "CLEAN_PARTIAL_UPLOAD",
+          "name": "Limpiar carga parcial",
+          "type": "storage-delete",
+          "next": "RETURN_PARTIAL_ERROR",
+          "description": "Elimina cualquier archivo guardado si otro archivo del mismo lote falló."
+        },
+        {
+          "id": "RETURN_CATALOG_ERROR",
+          "name": "Responder categoría no permitida",
+          "type": "return-response",
+          "next": null,
+          "description": "Informa que el archivo no corresponde al catálogo autorizado."
+        },
+        {
+          "id": "RETURN_PARTIAL_ERROR",
+          "name": "Responder carga parcial",
+          "type": "return-response",
+          "next": null,
+          "description": "Informa un error controlado después de limpiar el lote incompleto."
+        },
+        {
+          "id": "RETURN_INTERNAL_ERROR",
+          "name": "Responder error interno",
+          "type": "return-response",
+          "next": null,
+          "description": "Devuelve un error genérico sin stack trace."
+        }
+      ],
+      "validationCodes": [],
+      "responseImplementation": [
+        {
+          "actionId": "RETURN_UPLOAD",
+          "status": 201,
+          "body": {
+            "code": "const items=context.workflow['PREPARE_FILE'].result.items; const uploaded=context.workflow['UPLOAD_PRIVATE'].result.uploaded; return {success:true,archivos:items.map((item,index)=>({path:uploaded[index].path,nombre_original:item.nombre_original,mime_type:item.mime_type,size_bytes:item.size_bytes,categoria:item.categoria}))};",
+            "__wwtype": "js"
+          },
+          "contentType": "application/json"
+        },
+        {
+          "actionId": "RETURN_INPUT_ERROR",
+          "status": 400,
+          "body": {
+            "code": "const item=context.workflow['PREPARE_FILE'].result; return {success:false,code:item.code,message:item.message};",
+            "__wwtype": "js"
+          },
+          "contentType": "application/json"
+        },
+        {
+          "actionId": "RETURN_CATALOG_ERROR",
+          "status": 400,
+          "body": {
+            "code": "return context.workflow['VALIDATE_CATALOG'].result.rows[0].response;",
+            "__wwtype": "js"
+          },
+          "contentType": "application/json"
+        },
+        {
+          "actionId": "RETURN_PARTIAL_ERROR",
+          "status": 500,
+          "body": {
+            "code": "UPLOAD_INCOMPLETE",
+            "message": "No fue posible cargar el lote completo. No se conservaron archivos parciales.",
+            "success": false
+          },
+          "contentType": "application/json"
+        },
+        {
+          "actionId": "RETURN_INTERNAL_ERROR",
+          "status": 500,
+          "body": {
+            "code": "INTERNAL_ERROR",
+            "message": "No fue posible cargar el archivo.",
+            "success": false
+          },
+          "contentType": "application/json"
+        }
+      ],
+      "dependencies": {
+        "publicTables": [
+          "areas",
+          "tipos_servicio"
+        ],
+        "authUsers": false,
+        "privateStorage": true
+      }
+    }
+  ]
+}

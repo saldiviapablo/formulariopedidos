@@ -1,0 +1,439 @@
+{
+  "snapshot": "2026-09-01-pre-redesign",
+  "generatedAt": "2026-09-01",
+  "source": "WeWeb MCP (read-only)",
+  "workspace": "Drive Gobierno's workspace",
+  "project": "My project",
+  "projectId": "5791a02a-c0b8-49dc-a5b6-afe5fbb53b60",
+  "environment": "Editor environment",
+  "views": [
+    {
+      "id": "7d540266-f62e-4ebc-a6e5-1ab7daad9997",
+      "name": "vw_servicios_gestion",
+      "description": "Vista interna paginada para gestionar servicios solicitados, con datos mínimos del pedido, área y tipo de servicio. Excluye información específica, observaciones internas y campos de Notion.",
+      "parameters": [
+        {
+          "name": "pedido_visible",
+          "type": "text",
+          "bindingConfigured": true
+        },
+        {
+          "name": "area_id",
+          "type": "text",
+          "bindingConfigured": true
+        },
+        {
+          "name": "tipo_servicio_id",
+          "type": "text",
+          "bindingConfigured": true
+        },
+        {
+          "name": "fecha_desde",
+          "type": "text",
+          "bindingConfigured": true
+        },
+        {
+          "name": "fecha_hasta",
+          "type": "text",
+          "bindingConfigured": true
+        },
+        {
+          "name": "estado",
+          "type": "text",
+          "bindingConfigured": true
+        },
+        {
+          "name": "responsable_id",
+          "type": "text",
+          "bindingConfigured": true
+        },
+        {
+          "name": "solicitante",
+          "type": "text",
+          "bindingConfigured": true
+        }
+      ],
+      "security": {
+        "accessRule": "authenticated",
+        "accessRoles": [
+          "equipo_interno",
+          "admin"
+        ],
+        "accessMiddlewares": [],
+        "accessRolesCondition": "OR"
+      },
+      "sourceTable": "servicios_solicitados",
+      "columns": [
+        "id",
+        "estado",
+        "createdAt",
+        "area__areas",
+        "responsable",
+        "pedido__pedidos",
+        "tipo_servicio__tipos_servicio"
+      ],
+      "filters": [
+        {
+          "field": [
+            "pedido__pedidos",
+            "pedido_visible"
+          ],
+          "operator": "$iLike:contains",
+          "isEmptyIgnored": true,
+          "valueKind": "binding"
+        },
+        {
+          "field": "area",
+          "operator": "$eq",
+          "isEmptyIgnored": true,
+          "valueKind": "binding"
+        },
+        {
+          "field": "tipo_servicio",
+          "operator": "$eq",
+          "isEmptyIgnored": true,
+          "valueKind": "binding"
+        },
+        {
+          "field": "createdAt",
+          "operator": "$gte",
+          "isEmptyIgnored": true,
+          "valueKind": "binding"
+        },
+        {
+          "field": "createdAt",
+          "operator": "$lte",
+          "isEmptyIgnored": true,
+          "valueKind": "binding"
+        },
+        {
+          "field": "estado",
+          "operator": "$eq",
+          "isEmptyIgnored": true,
+          "valueKind": "binding"
+        },
+        {
+          "field": "responsable",
+          "operator": "$eq",
+          "isEmptyIgnored": true,
+          "valueKind": "binding"
+        },
+        {
+          "field": [
+            "pedido__pedidos",
+            "nombre_apellido"
+          ],
+          "operator": "$iLike:contains",
+          "isEmptyIgnored": true,
+          "valueKind": "binding"
+        }
+      ],
+      "includes": [
+        {
+          "table": "pedidos",
+          "schema": "public",
+          "path": [
+            "pedido__pedidos"
+          ],
+          "joinType": "left",
+          "on": {
+            "left": "pedido",
+            "right": "id"
+          },
+          "many": false
+        },
+        {
+          "table": "areas",
+          "schema": "public",
+          "path": [
+            "area__areas"
+          ],
+          "joinType": "left",
+          "on": {
+            "left": "area",
+            "right": "id"
+          },
+          "many": false
+        },
+        {
+          "table": "tipos_servicio",
+          "schema": "public",
+          "path": [
+            "tipo_servicio__tipos_servicio"
+          ],
+          "joinType": "left",
+          "on": {
+            "left": "tipo_servicio",
+            "right": "id"
+          },
+          "many": false
+        }
+      ],
+      "sort": [
+        {
+          "key": "createdAt",
+          "direction": "DESC"
+        }
+      ],
+      "limit": 100
+    },
+    {
+      "id": "3727d8c2-f41d-4b67-9a6c-07a6d34abd59",
+      "name": "vw_areas_activas",
+      "description": "Catálogo de áreas activas, ordenadas para la futura Interface de PEDIDOS.",
+      "parameters": [],
+      "security": {
+        "accessRule": "public",
+        "accessRoles": [],
+        "accessMiddlewares": [],
+        "accessRolesCondition": "OR"
+      },
+      "sourceTable": "areas",
+      "columns": [
+        "id",
+        "slug",
+        "orden",
+        "nombre",
+        "descripcion"
+      ],
+      "filters": [
+        {
+          "field": "activo",
+          "operator": "$eq",
+          "isEmptyIgnored": false,
+          "valueKind": "static",
+          "staticValue": true
+        }
+      ],
+      "includes": [],
+      "sort": [
+        {
+          "key": "orden",
+          "direction": "ASC"
+        }
+      ],
+      "limit": 100
+    },
+    {
+      "id": "81d107b4-a6a0-407e-9295-360635e82f5a",
+      "name": "vw_tipos_servicio_activos",
+      "description": "Catálogo de tipos de servicio activos, ordenado e incluyendo la identificación y datos visibles del área relacionada.",
+      "parameters": [],
+      "security": {
+        "accessRule": "public",
+        "accessRoles": [],
+        "accessMiddlewares": [],
+        "accessRolesCondition": "OR"
+      },
+      "sourceTable": "tipos_servicio",
+      "columns": [
+        "id",
+        "slug",
+        "orden",
+        "nombre",
+        "area__areas",
+        "descripcion",
+        "configuracion"
+      ],
+      "filters": [
+        {
+          "field": "activo",
+          "operator": "$eq",
+          "isEmptyIgnored": false,
+          "valueKind": "static",
+          "staticValue": true
+        }
+      ],
+      "includes": [
+        {
+          "table": "areas",
+          "schema": "public",
+          "path": [
+            "area__areas"
+          ],
+          "joinType": "left",
+          "on": {
+            "left": "area",
+            "right": "id"
+          },
+          "many": false
+        }
+      ],
+      "sort": [
+        {
+          "key": "orden",
+          "direction": "ASC"
+        }
+      ],
+      "limit": 200
+    },
+    {
+      "id": "27c793f8-2fc0-48d2-9b27-ea2c6912f88d",
+      "name": "vw_pedido_detalle_interno",
+      "description": "Vista interna de detalle por servicio con cabecera relacionada del pedido. Incluye información específica y observaciones internas; excluye archivos y campos de Notion.",
+      "parameters": [
+        {
+          "name": "pedido_id",
+          "type": "text",
+          "bindingConfigured": true
+        },
+        {
+          "name": "pedido_visible",
+          "type": "text",
+          "bindingConfigured": false
+        }
+      ],
+      "security": {
+        "accessRule": "authenticated",
+        "accessRoles": [
+          "equipo_interno",
+          "admin"
+        ],
+        "accessMiddlewares": [],
+        "accessRolesCondition": "OR"
+      },
+      "sourceTable": "servicios_solicitados",
+      "columns": [
+        "id",
+        "estado",
+        "createdAt",
+        "updatedAt",
+        "area__areas",
+        "responsable",
+        "pedido__pedidos",
+        "informacion_especifica",
+        "observaciones_internas",
+        "tipo_servicio__tipos_servicio"
+      ],
+      "filters": [
+        {
+          "field": "pedido",
+          "operator": "$eq",
+          "isEmptyIgnored": true,
+          "valueKind": "binding"
+        },
+        {
+          "field": [
+            "pedido__pedidos",
+            "pedido_visible"
+          ],
+          "operator": "$eq",
+          "isEmptyIgnored": true,
+          "valueKind": "binding"
+        }
+      ],
+      "includes": [
+        {
+          "table": "pedidos",
+          "schema": "public",
+          "path": [
+            "pedido__pedidos"
+          ],
+          "joinType": "left",
+          "on": {
+            "left": "pedido",
+            "right": "id"
+          },
+          "many": false
+        },
+        {
+          "table": "areas",
+          "schema": "public",
+          "path": [
+            "area__areas"
+          ],
+          "joinType": "left",
+          "on": {
+            "left": "area",
+            "right": "id"
+          },
+          "many": false
+        },
+        {
+          "table": "tipos_servicio",
+          "schema": "public",
+          "path": [
+            "tipo_servicio__tipos_servicio"
+          ],
+          "joinType": "left",
+          "on": {
+            "left": "tipo_servicio",
+            "right": "id"
+          },
+          "many": false
+        }
+      ],
+      "sort": [
+        {
+          "key": "createdAt",
+          "direction": "ASC"
+        }
+      ],
+      "limit": 100
+    },
+    {
+      "id": "1f8b1a74-b80f-44bc-9027-a25a54da3186",
+      "name": "vw_archivos_pedido_interno",
+      "description": "Vista interna de metadata de archivos privados por pedido. Expone solo metadata segura y el id del servicio; nunca storage_path, archivo ni URLs.",
+      "parameters": [
+        {
+          "name": "pedido_id",
+          "type": "text",
+          "bindingConfigured": true
+        }
+      ],
+      "security": {
+        "accessRule": "authenticated",
+        "accessRoles": [
+          "equipo_interno",
+          "admin"
+        ],
+        "accessMiddlewares": [],
+        "accessRolesCondition": "OR"
+      },
+      "sourceTable": "archivos",
+      "columns": [
+        "id",
+        "categoria",
+        "createdAt",
+        "mime_type",
+        "size_bytes",
+        "nombre_original",
+        "servicio__servicios_solicitados"
+      ],
+      "filters": [
+        {
+          "field": [
+            "servicio__servicios_solicitados",
+            "pedido"
+          ],
+          "operator": "$eq",
+          "isEmptyIgnored": false,
+          "valueKind": "binding"
+        }
+      ],
+      "includes": [
+        {
+          "table": "servicios_solicitados",
+          "schema": "public",
+          "path": [
+            "servicio__servicios_solicitados"
+          ],
+          "joinType": "left",
+          "on": {
+            "left": "servicio",
+            "right": "id"
+          },
+          "many": false
+        }
+      ],
+      "sort": [
+        {
+          "key": "createdAt",
+          "direction": "ASC"
+        }
+      ],
+      "limit": 200
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "snapshot": "2026-09-01-pre-redesign",
+  "generatedAt": "2026-09-01",
+  "source": "WeWeb MCP (read-only)",
+  "workspace": "Drive Gobierno's workspace",
+  "project": "My project",
+  "projectId": "5791a02a-c0b8-49dc-a5b6-afe5fbb53b60",
+  "environment": "Editor environment",
+  "wewebAuthInstalled": true,
+  "roles": [
+    {
+      "name": "solicitante"
+    },
+    {
+      "name": "equipo_interno"
+    },
+    {
+      "name": "admin"
+    }
+  ],
+  "managedVariables": [
+    {
+      "name": "PROVIDER_EMAIL_DISABLE_SIGNUP",
+      "secure": false,
+      "configured": {
+        "editor": true,
+        "staging": true,
+        "production": true
+      }
+    },
+    {
+      "name": "PROVIDER_EMAIL_ENABLED",
+      "secure": false,
+      "configured": {
+        "editor": true,
+        "staging": true,
+        "production": true
+      }
+    },
+    {
+      "name": "PROVIDER_EMAIL_PASSWORD_MIN_LENGTH",
+      "secure": false,
+      "configured": {
+        "editor": true,
+        "staging": true,
+        "production": true
+      }
+    },
+    {
+      "name": "PROVIDER_EMAIL_RESET_PASSWORD_TOKEN_EXPIRES_IN",
+      "secure": false,
+      "configured": {
+        "editor": true,
+        "staging": true,
+        "production": true
+      }
+    },
+    {
+      "name": "PROVIDER_EMAIL_VERIFICATION_ENABLED",
+      "secure": false,
+      "configured": {
+        "editor": true,
+        "staging": true,
+        "production": true
+      }
+    }
+  ],
+  "usersExported": false
+}

@@ -1,0 +1,836 @@
+{
+  "snapshot": "2026-09-01-pre-redesign",
+  "generatedAt": "2026-09-01",
+  "source": "WeWeb MCP (read-only)",
+  "workspace": "Drive Gobierno's workspace",
+  "project": "My project",
+  "projectId": "5791a02a-c0b8-49dc-a5b6-afe5fbb53b60",
+  "environment": "Editor environment",
+  "tables": [
+    {
+      "name": "archivos",
+      "schema": "public",
+      "description": "Archivos y metadatos asociados al servicio solicitado correspondiente.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "required": true,
+          "primaryKey": true,
+          "unique": false,
+          "system": true,
+          "defaultValue": "uuidv7()",
+          "foreignKey": null,
+          "description": "Unique identifier for the row"
+        },
+        {
+          "name": "categoria",
+          "type": "text",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Categoría funcional del archivo."
+        },
+        {
+          "name": "nombre_original",
+          "type": "text",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Nombre original del archivo."
+        },
+        {
+          "name": "mime_type",
+          "type": "text",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Tipo MIME del archivo."
+        },
+        {
+          "name": "size_bytes",
+          "type": "double precision",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Tamaño del archivo en bytes."
+        },
+        {
+          "name": "storage_path",
+          "type": "text",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Ruta persistente del archivo en WeWeb Storage."
+        },
+        {
+          "name": "servicio",
+          "type": "uuid",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": {
+            "schema": "public",
+            "table": "servicios_solicitados",
+            "column": "id"
+          },
+          "description": "Servicio solicitado al que pertenece el archivo."
+        },
+        {
+          "name": "createdAt",
+          "type": "timestamp without time zone",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": true,
+          "defaultValue": "CURRENT_TIMESTAMP",
+          "foreignKey": null,
+          "description": "Timestamp when the row was created"
+        },
+        {
+          "name": "updatedAt",
+          "type": "timestamp without time zone",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": true,
+          "defaultValue": "CURRENT_TIMESTAMP",
+          "foreignKey": null,
+          "description": "Timestamp when the row was last updated"
+        },
+        {
+          "name": "subido_por",
+          "type": "uuid",
+          "required": false,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": {
+            "schema": "auth",
+            "table": "users",
+            "column": "id"
+          },
+          "description": "Usuario de WeWeb Auth que subió el archivo."
+        },
+        {
+          "name": "archivo",
+          "type": "text",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": {
+            "schema": "storage",
+            "table": "privateFiles",
+            "column": "path"
+          },
+          "description": "Referencia nativa al archivo almacenado en WeWeb Storage Private."
+        }
+      ],
+      "uniqueConstraints": []
+    },
+    {
+      "name": "areas",
+      "schema": "public",
+      "description": "Catálogo de áreas de servicio disponibles en PEDIDOS.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "required": true,
+          "primaryKey": true,
+          "unique": false,
+          "system": true,
+          "defaultValue": "uuidv7()",
+          "foreignKey": null,
+          "description": "Unique identifier for the row"
+        },
+        {
+          "name": "nombre",
+          "type": "text",
+          "required": true,
+          "primaryKey": false,
+          "unique": true,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Nombre visible del área."
+        },
+        {
+          "name": "slug",
+          "type": "text",
+          "required": true,
+          "primaryKey": false,
+          "unique": true,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Identificador técnico estable del área."
+        },
+        {
+          "name": "activo",
+          "type": "boolean",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Indica si el área puede seleccionarse actualmente."
+        },
+        {
+          "name": "orden",
+          "type": "double precision",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Orden de presentación del área."
+        },
+        {
+          "name": "descripcion",
+          "type": "text",
+          "required": false,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Descripción opcional del área."
+        },
+        {
+          "name": "createdAt",
+          "type": "timestamp without time zone",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": true,
+          "defaultValue": "CURRENT_TIMESTAMP",
+          "foreignKey": null,
+          "description": "Timestamp when the row was created"
+        },
+        {
+          "name": "updatedAt",
+          "type": "timestamp without time zone",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": true,
+          "defaultValue": "CURRENT_TIMESTAMP",
+          "foreignKey": null,
+          "description": "Timestamp when the row was last updated"
+        }
+      ],
+      "uniqueConstraints": [
+        [
+          "nombre"
+        ],
+        [
+          "slug"
+        ]
+      ]
+    },
+    {
+      "name": "pedidos",
+      "schema": "public",
+      "description": "Cabecera de cada pedido de servicios de comunicación institucional.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "required": true,
+          "primaryKey": true,
+          "unique": false,
+          "system": true,
+          "defaultValue": "uuidv7()",
+          "foreignKey": null,
+          "description": "Unique identifier for the row"
+        },
+        {
+          "name": "pedido_visible",
+          "type": "text",
+          "required": true,
+          "primaryKey": false,
+          "unique": true,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Identificador visible con formato PED-AAAA-NNNNNN."
+        },
+        {
+          "name": "numero",
+          "type": "double precision",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Número interno correlativo del pedido."
+        },
+        {
+          "name": "estado_general",
+          "type": "text",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Estado general del pedido."
+        },
+        {
+          "name": "nombre_apellido",
+          "type": "text",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Nombre y apellido del solicitante."
+        },
+        {
+          "name": "telefono",
+          "type": "text",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Teléfono del solicitante."
+        },
+        {
+          "name": "correo",
+          "type": "text",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Correo electrónico del solicitante."
+        },
+        {
+          "name": "area_solicitante",
+          "type": "text",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Área institucional del solicitante."
+        },
+        {
+          "name": "tipos_pedido",
+          "type": "jsonb",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Array JSON de áreas o tipos de pedido seleccionados."
+        },
+        {
+          "name": "submission_token",
+          "type": "text",
+          "required": true,
+          "primaryKey": false,
+          "unique": true,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Token único para impedir envíos duplicados."
+        },
+        {
+          "name": "notion_page_id",
+          "type": "text",
+          "required": false,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Identificador opcional de la página espejo en Notion."
+        },
+        {
+          "name": "notion_url",
+          "type": "text",
+          "required": false,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "URL opcional de seguimiento en Notion."
+        },
+        {
+          "name": "notion_sync_status",
+          "type": "text",
+          "required": false,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Estado opcional de sincronización con Notion."
+        },
+        {
+          "name": "notion_last_sync_at",
+          "type": "timestamp with time zone",
+          "required": false,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Fecha y hora de la última sincronización con Notion."
+        },
+        {
+          "name": "createdAt",
+          "type": "timestamp without time zone",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": true,
+          "defaultValue": "CURRENT_TIMESTAMP",
+          "foreignKey": null,
+          "description": "Timestamp when the row was created"
+        },
+        {
+          "name": "updatedAt",
+          "type": "timestamp without time zone",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": true,
+          "defaultValue": "CURRENT_TIMESTAMP",
+          "foreignKey": null,
+          "description": "Timestamp when the row was last updated"
+        },
+        {
+          "name": "creado_por",
+          "type": "uuid",
+          "required": false,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": {
+            "schema": "auth",
+            "table": "users",
+            "column": "id"
+          },
+          "description": "Usuario de WeWeb Auth que creó el pedido."
+        }
+      ],
+      "uniqueConstraints": [
+        [
+          "pedido_visible"
+        ],
+        [
+          "submission_token"
+        ]
+      ]
+    },
+    {
+      "name": "secuencias",
+      "schema": "public",
+      "description": "Contadores para numeración correlativa anual de pedidos.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "required": true,
+          "primaryKey": true,
+          "unique": false,
+          "system": true,
+          "defaultValue": "uuidv7()",
+          "foreignKey": null,
+          "description": "Unique identifier for the row"
+        },
+        {
+          "name": "clave",
+          "type": "text",
+          "required": true,
+          "primaryKey": false,
+          "unique": true,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Clave única del contador, por ejemplo pedidos_2026."
+        },
+        {
+          "name": "valor_actual",
+          "type": "double precision",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Último valor utilizado por la secuencia."
+        },
+        {
+          "name": "createdAt",
+          "type": "timestamp without time zone",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": true,
+          "defaultValue": "CURRENT_TIMESTAMP",
+          "foreignKey": null,
+          "description": "Timestamp when the row was created"
+        },
+        {
+          "name": "updatedAt",
+          "type": "timestamp without time zone",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": true,
+          "defaultValue": "CURRENT_TIMESTAMP",
+          "foreignKey": null,
+          "description": "Timestamp when the row was last updated"
+        }
+      ],
+      "uniqueConstraints": [
+        [
+          "clave"
+        ]
+      ]
+    },
+    {
+      "name": "servicios_solicitados",
+      "schema": "public",
+      "description": "Un registro independiente por cada servicio seleccionado dentro de un pedido.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "required": true,
+          "primaryKey": true,
+          "unique": false,
+          "system": true,
+          "defaultValue": "uuidv7()",
+          "foreignKey": null,
+          "description": "Unique identifier for the row"
+        },
+        {
+          "name": "informacion_especifica",
+          "type": "jsonb",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Información particular del servicio en formato JSON."
+        },
+        {
+          "name": "observaciones_internas",
+          "type": "text",
+          "required": false,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Observaciones internas no visibles para el solicitante."
+        },
+        {
+          "name": "notion_page_id",
+          "type": "text",
+          "required": false,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Identificador opcional de la página del servicio en Notion."
+        },
+        {
+          "name": "notion_url",
+          "type": "text",
+          "required": false,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "URL opcional del seguimiento del servicio en Notion."
+        },
+        {
+          "name": "notion_sync_status",
+          "type": "text",
+          "required": false,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Estado opcional de sincronización del servicio con Notion."
+        },
+        {
+          "name": "notion_last_sync_at",
+          "type": "timestamp with time zone",
+          "required": false,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Fecha y hora de la última sincronización del servicio con Notion."
+        },
+        {
+          "name": "pedido",
+          "type": "uuid",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": {
+            "schema": "public",
+            "table": "pedidos",
+            "column": "id"
+          },
+          "description": "Pedido principal al que pertenece el servicio."
+        },
+        {
+          "name": "tipo_servicio",
+          "type": "uuid",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": {
+            "schema": "public",
+            "table": "tipos_servicio",
+            "column": "id"
+          },
+          "description": "Tipo de servicio solicitado."
+        },
+        {
+          "name": "area",
+          "type": "uuid",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": {
+            "schema": "public",
+            "table": "areas",
+            "column": "id"
+          },
+          "description": "Área responsable del servicio."
+        },
+        {
+          "name": "createdAt",
+          "type": "timestamp without time zone",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": true,
+          "defaultValue": "CURRENT_TIMESTAMP",
+          "foreignKey": null,
+          "description": "Timestamp when the row was created"
+        },
+        {
+          "name": "updatedAt",
+          "type": "timestamp without time zone",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": true,
+          "defaultValue": "CURRENT_TIMESTAMP",
+          "foreignKey": null,
+          "description": "Timestamp when the row was last updated"
+        },
+        {
+          "name": "estado",
+          "type": "text",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Estado operativo independiente del servicio."
+        },
+        {
+          "name": "responsable",
+          "type": "uuid",
+          "required": false,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": {
+            "schema": "auth",
+            "table": "users",
+            "column": "id"
+          },
+          "description": "Usuario de WeWeb Auth responsable del servicio."
+        }
+      ],
+      "uniqueConstraints": []
+    },
+    {
+      "name": "tipos_servicio",
+      "schema": "public",
+      "description": "Catálogo de servicios disponibles, relacionados con su área.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "required": true,
+          "primaryKey": true,
+          "unique": false,
+          "system": true,
+          "defaultValue": "uuidv7()",
+          "foreignKey": null,
+          "description": "Unique identifier for the row"
+        },
+        {
+          "name": "nombre",
+          "type": "text",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Nombre visible del tipo de servicio."
+        },
+        {
+          "name": "slug",
+          "type": "text",
+          "required": true,
+          "primaryKey": false,
+          "unique": true,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Identificador técnico estable del tipo de servicio."
+        },
+        {
+          "name": "activo",
+          "type": "boolean",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Indica si el servicio puede seleccionarse actualmente."
+        },
+        {
+          "name": "orden",
+          "type": "double precision",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Orden de presentación dentro del área."
+        },
+        {
+          "name": "descripcion",
+          "type": "text",
+          "required": false,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Descripción opcional del servicio."
+        },
+        {
+          "name": "configuracion",
+          "type": "jsonb",
+          "required": false,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": null,
+          "description": "Metadatos JSON opcionales de configuración de interfaz."
+        },
+        {
+          "name": "area",
+          "type": "uuid",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": false,
+          "defaultValue": null,
+          "foreignKey": {
+            "schema": "public",
+            "table": "areas",
+            "column": "id"
+          },
+          "description": "Área a la que pertenece el tipo de servicio."
+        },
+        {
+          "name": "createdAt",
+          "type": "timestamp without time zone",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": true,
+          "defaultValue": "CURRENT_TIMESTAMP",
+          "foreignKey": null,
+          "description": "Timestamp when the row was created"
+        },
+        {
+          "name": "updatedAt",
+          "type": "timestamp without time zone",
+          "required": true,
+          "primaryKey": false,
+          "unique": false,
+          "system": true,
+          "defaultValue": "CURRENT_TIMESTAMP",
+          "foreignKey": null,
+          "description": "Timestamp when the row was last updated"
+        }
+      ],
+      "uniqueConstraints": [
+        [
+          "slug"
+        ]
+      ]
+    }
+  ],
+  "limitations": [
+    "Sólo se incluyen constraints y defaults expuestos por MCP.",
+    "No se exportaron filas de tablas operativas."
+  ]
+}
