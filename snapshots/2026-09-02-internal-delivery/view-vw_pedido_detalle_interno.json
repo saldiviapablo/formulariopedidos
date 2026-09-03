@@ -1,0 +1,11 @@
+{
+  "id": "27c793f8-2fc0-48d2-9b27-ea2c6912f88d",
+  "name": "vw_pedido_detalle_interno",
+  "security": {
+    "accessRule": "authenticated",
+    "accessRoles": ["equipo_interno", "admin"],
+    "accessRolesCondition": "OR"
+  },
+  "newColumns": ["producto_final_url", "producto_final_nota"],
+  "compatibility": "La vista continúa devolviendo un registro por servicio y mantiene PED históricos con múltiples servicios."
+}

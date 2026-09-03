@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-09-02 — Gestión interna y entrega final implementadas en Editor
+
+- Se agregaron los campos opcionales `producto_final_url` y `producto_final_nota` a cada servicio solicitado.
+- El detalle interno permite registrar una entrega externa HTTPS, su nota y abrir el enlace guardado por servicio.
+- `Finalizado` exige producto final válido en interfaz y backend, manteniendo responsable, observaciones y `updatedAt`.
+- No se configuraron Resend ni emails, no se creó `/seguimiento` y Production no fue modificada.
+
 ## 2026-09-02 — Redesign 310826 core completado en Editor
 
 Se implementó y validó manualmente el core del nuevo flujo público exclusivamente en WeWeb Editor.

@@ -19,11 +19,22 @@ Implementado en Editor:
 
 Pendiente de una fase posterior:
 
-- Producto final, `producto_final_url` y `producto_final_nota`.
 - Resend, emails automáticos y solicitar información faltante.
 - `comunicaciones_pedido`.
 - `/seguimiento`.
 - Publicación en Production.
+
+## Gestión interna y entrega final — 2026-09-02
+
+Implementado exclusivamente en WeWeb Editor:
+
+- Cada `servicios_solicitados` tiene `producto_final_url` y `producto_final_nota` opcionales, fuera de `informacion_especifica`.
+- La entrega final usa un enlace HTTPS externo; no almacena el producto final en WeWeb Storage ni en la tabla `archivos`.
+- El detalle interno muestra y guarda la entrega final de forma independiente por servicio, incluso en PED históricos con múltiples servicios.
+- Pasar un servicio a `Finalizado` exige un enlace HTTPS válido del producto final tanto en la interfaz como en `api_actualizar_servicio`.
+- La View y el endpoint continúan limitados a `equipo_interno` o `admin`.
+
+Siguen pendientes Resend, emails, solicitud de información faltante, `comunicaciones_pedido`, `/seguimiento` y Production.
 
 ## Principios generales
 

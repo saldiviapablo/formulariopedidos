@@ -1,0 +1,23 @@
+{
+  "table": "servicios_solicitados",
+  "newColumns": [
+    {
+      "name": "producto_final_url",
+      "type": "text",
+      "required": false,
+      "unique": false,
+      "purpose": "Enlace HTTPS externo opcional al producto final."
+    },
+    {
+      "name": "producto_final_nota",
+      "type": "text",
+      "required": false,
+      "unique": false,
+      "purpose": "Nota opcional para acompañar la entrega final."
+    }
+  ],
+  "notes": [
+    "Ambos campos son operativos y no pertenecen a informacion_especifica.",
+    "El producto final no se almacena en WeWeb Storage ni en archivos."
+  ]
+}
