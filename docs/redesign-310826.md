@@ -2,7 +2,7 @@
 
 ## Estado del documento
 
-Especificación funcional cerrada el 2026-09-01 e implementada en el entorno Editor de WeWeb el 2026-09-02.
+Especificación funcional cerrada el 2026-09-01 e implementada progresivamente en el entorno Editor de WeWeb durante el 2026-09-02 y el 2026-09-03.
 
 La rama de trabajo es `redesign-310826`. El core público fue implementado sin modificar Production ni migrar datos históricos.
 
@@ -17,11 +17,12 @@ Implementado en Editor:
 - Revisión agrupada, resultado por ticket y progreso de tres pasos.
 - Compatibilidad histórica conservada, incluido el PED multi-servicio previo.
 
+La capa de comunicaciones transaccionales se implementó y probó en Editor el 2026-09-03. Permite registrar y enviar notificaciones para pedido ingresado, En revisión, En proceso, Finalizado, Cancelado y solicitudes de información faltante, sin revertir la operación de negocio si falla el envío.
+
 Pendiente de una fase posterior:
 
-- Resend, emails automáticos y solicitar información faltante.
-- `comunicaciones_pedido`.
 - `/seguimiento`.
+- Remitente y dominio definitivos para Production.
 - Publicación en Production.
 
 ## Gestión interna y entrega final — 2026-09-02
@@ -34,7 +35,7 @@ Implementado exclusivamente en WeWeb Editor:
 - Pasar un servicio a `Finalizado` exige un enlace HTTPS válido del producto final tanto en la interfaz como en `api_actualizar_servicio`.
 - La View y el endpoint continúan limitados a `equipo_interno` o `admin`.
 
-Siguen pendientes Resend, emails, solicitud de información faltante, `comunicaciones_pedido`, `/seguimiento` y Production.
+Se implementaron en Editor Resend, emails transaccionales, solicitud de información faltante e historial de `comunicaciones_pedido`. Siguen pendientes `/seguimiento`, el remitente y dominio definitivos para Production y la publicación en Production.
 
 ## Principios generales
 
@@ -46,7 +47,7 @@ Siguen pendientes Resend, emails, solicitud de información faltante, `comunicac
 - No se transforman pedidos históricos de Fotografía o Audiovisual en Cobertura de eventos.
 - Los adjuntos enviados por el solicitante continúan previstos en WeWeb Storage Private.
 - El producto final se entrega mediante una URL HTTPS externa y no se almacena en WeWeb Storage.
-- Resend será el proveedor futuro de correo, pero su configuración no forma parte de esta especificación documental.
+- Resend se utiliza en Editor para comunicaciones transaccionales. Sus credenciales y configuración sensible no se documentan ni se almacenan en el repositorio.
 
 ## Flujo público
 
@@ -223,7 +224,7 @@ La revisión final y el resultado deben agrupar visualmente los PED originados e
 
 ## Estados y comunicaciones por correo
 
-Resend será el proveedor futuro. No se configura en esta etapa.
+En Editor, Resend entrega comunicaciones transaccionales y cada intento queda registrado en el historial interno. Un fallo de entrega no revierte la creación del pedido ni la actualización de su estado.
 
 Los únicos estados que generan correo al solicitante son:
 
@@ -259,11 +260,9 @@ Ambos son de uso interno y no forman parte de los datos originales del solicitan
 
 Al pasar un PED a Finalizado, el correo debe incluir el enlace externo y, cuando exista, la nota. La disponibilidad y seguridad del archivo dependen de los permisos configurados en el proveedor externo.
 
-## Registro futuro de comunicaciones
+## Registro de comunicaciones
 
-Se propone crear en una fase futura la tabla `comunicaciones_pedido`. Esta especificación no autoriza su creación.
-
-Campos previstos:
+En Editor existe la tabla `comunicaciones_pedido` para la trazabilidad interna de cada intento de comunicación. Registra:
 
 - pedido;
 - servicio;
@@ -271,10 +270,12 @@ Campos previstos:
 - estado relacionado, opcional;
 - destinatario;
 - asunto;
+- mensaje;
 - resultado;
 - identificador del mensaje del proveedor, opcional;
 - error, opcional;
 - fecha y hora.
+- usuario interno que realizó el envío, cuando corresponde.
 
 Tipos de comunicación previstos:
 
@@ -320,7 +321,8 @@ La exposición del enlace al producto final en esta pantalla queda como una deci
 - No se borran ni renumeran pedidos.
 - No se alteran datos históricos ni catálogos históricos de forma destructiva.
 - No se realiza una migración automática de Fotografía o Audiovisual hacia Cobertura de eventos.
-- No se implementan en esta etapa Resend, la tabla de comunicaciones, `/seguimiento` ni cambios en WeWeb.
+- Se implementan en Editor Resend, la tabla de comunicaciones, el historial interno y la solicitud de información faltante.
+- Permanecen fuera de alcance `/seguimiento`, el remitente y dominio definitivos de Production y la publicación en Production.
 
 ## Cierre
 

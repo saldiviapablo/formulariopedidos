@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-09-03 — Resend y comunicaciones completados en Editor
+
+- Se implementaron comunicaciones transaccionales e historial interno para Pedido ingresado, En revisión, En proceso, Finalizado, Cancelado y Solicitar información faltante.
+- La actualización de estado conserva la operación de negocio aunque falle el envío de correo; el resultado queda trazado en el historial.
+- Se comprobaron manualmente en Gmail siete emails de QA.
+- Siguen pendientes `/seguimiento`, remitente y dominio definitivos para Production, y la publicación en Production.
+
 ## 2026-09-02 — Gestión interna y entrega final implementadas en Editor
 
 - Se agregaron los campos opcionales `producto_final_url` y `producto_final_nota` a cada servicio solicitado.
