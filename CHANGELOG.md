@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-09-03 — Seguimiento público y emails personalizados completados en Editor
+
+- Se implementó y aprobó manualmente la consulta pública de seguimiento mediante PED y correo, sin exponer datos internos.
+- Las comunicaciones transaccionales personalizan el saludo y centralizan el acceso temporal de Editor a seguimiento.
+- Quedan pendientes rate limiting, dominio/remitente y URL definitivos de Production, publicación Production y QA final general.
+
 ## 2026-09-03 — Resend y comunicaciones completados en Editor
 
 - Se implementaron comunicaciones transaccionales e historial interno para Pedido ingresado, En revisión, En proceso, Finalizado, Cancelado y Solicitar información faltante.

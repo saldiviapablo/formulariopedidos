@@ -21,9 +21,11 @@ La capa de comunicaciones transaccionales se implementó y probó en Editor el 2
 
 Pendiente de una fase posterior:
 
-- `/seguimiento`.
+- Rate limiting y protección adicional contra abuso de seguimiento.
 - Remitente y dominio definitivos para Production.
+- URL definitiva de seguimiento para Production.
 - Publicación en Production.
+- QA final general.
 
 ## Gestión interna y entrega final — 2026-09-02
 
@@ -286,6 +288,8 @@ Tipos de comunicación previstos:
 - `cancelado`.
 
 ## Seguimiento público futuro
+
+Implementado y aprobado manualmente en Editor el 2026-09-03: `/seguimiento` es público, solicita PED y correo, normaliza ambos en backend y devuelve exclusivamente área, servicio, estado público y fechas. No expone producto final ni datos internos.
 
 Se prevé una página pública `/seguimiento` con consulta mediante:
 
