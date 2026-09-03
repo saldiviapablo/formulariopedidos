@@ -1,0 +1,14 @@
+{
+  "public": [
+    {"name":"api_crear_pedido_completo","method":"POST","path":"/pedidos/crear-completo","purpose":"Creación atómica, ordenada e idempotente de un PED por servicio."},
+    {"name":"api_consultar_estado_pedido","method":"POST","path":"/pedidos/seguimiento","purpose":"Consulta limitada por PED y correo."},
+    {"name":"api_upload_archivo","method":"POST","path":"/archivos/subir","purpose":"Carga validada a Storage Private."},
+    {"name":"api_delete_temp_file","method":"DELETE","path":"/archivos/temporal","purpose":"Limpieza controlada de carga temporal."}
+  ],
+  "internal": [
+    {"name":"api_actualizar_servicio","method":"PATCH","path":"/servicios/actualizar","roles":["equipo_interno","admin"]},
+    {"name":"api_get_signed_file_url","method":"POST","path":"/archivos/signed-url","roles":["equipo_interno","admin"]},
+    {"name":"api_listar_responsables","method":"GET","path":"/responsables/listar","roles":["equipo_interno","admin"]},
+    {"name":"api_solicitar_informacion","method":"POST","path":"/api/solicitar-informacion","roles":["equipo_interno","admin"]}
+  ]
+}

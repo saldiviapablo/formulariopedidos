@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-09-03 — Desarrollo funcional completo y QA aprobado en Editor
+
+- Se aprobó el QA funcional integral de formulario, adjuntos, gestión, estados, producto final, comunicaciones y seguimiento público.
+- Se cerró el desarrollo funcional en Editor; UX/UI continúa como una fase separada.
+- Production no fue modificada ni publicada.
+
 ## 2026-09-03 — Seguimiento público y emails personalizados completados en Editor
 
 - Se implementó y aprobó manualmente la consulta pública de seguimiento mediante PED y correo, sin exponer datos internos.

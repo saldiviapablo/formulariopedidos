@@ -1,0 +1,11 @@
+{
+  "workflows": [
+    {"name":"api_crear_pedido_completo","behavior":"Valida el payload, fechas y archivos; reserva correlativos y crea registros en una operación atómica. Rechaza reintentos por token."},
+    {"name":"api_actualizar_servicio","behavior":"Actualiza campos internos; exige producto HTTPS para Finalizado y notifica solo transiciones autorizadas."},
+    {"name":"bw_enviar_comunicacion_pedido","behavior":"Normaliza saludo, bloque de seguimiento y firma; registra el intento. El fallo del correo no revierte la operación."},
+    {"name":"api_solicitar_informacion","behavior":"Envía y audita una solicitud de información sin cambiar el estado."},
+    {"name":"api_consultar_estado_pedido","behavior":"Normaliza PED/correo y devuelve un payload público mínimo."},
+    {"name":"api_get_signed_file_url","behavior":"Genera URL temporal solo para roles internos."}
+  ],
+  "redaction": "Se excluyen parámetros de ejecución, credenciales, destinatarios, proveedores y valores sensibles."
+}

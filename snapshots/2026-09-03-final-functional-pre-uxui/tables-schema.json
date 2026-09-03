@@ -1,0 +1,13 @@
+{
+  "tables": {
+    "pedidos": ["pedido_visible:text unique","numero:number","estado_general:text","nombre_apellido:text","telefono:text","correo:text","area_solicitante:text","tipos_pedido:json","submission_token:text unique","creado_por:auth.users"],
+    "servicios_solicitados": ["pedido:pedidos","area:areas","tipo_servicio:tipos_servicio","estado:text","responsable:auth.users optional","informacion_especifica:json","observaciones_internas:text optional","producto_final_url:text optional","producto_final_nota:text optional"],
+    "areas": ["nombre:text unique","slug:text unique","activo:boolean","orden:number","descripcion:text optional"],
+    "tipos_servicio": ["nombre:text","slug:text unique","activo:boolean","orden:number","descripcion:text optional","configuracion:json optional","area:areas"],
+    "archivos": ["categoria:text","nombre_original:text","mime_type:text","size_bytes:number","storage_path:text","servicio:servicios_solicitados","subido_por:auth.users optional","archivo:storage.privateFiles"],
+    "secuencias": ["clave:text unique","valor_actual:number"],
+    "comunicaciones_pedido": ["tipo:text","pedido:pedidos","servicio:servicios_solicitados","estado:text optional","destinatario:text","asunto:text","mensaje:text","resultado:text","enviado_at:timestamp optional","enviado_por:auth.users optional","provider_message_id:text optional","error:text optional"]
+  },
+  "systemColumns": ["id","createdAt","updatedAt"],
+  "redaction": "No incluye filas ni valores de tablas."
+}

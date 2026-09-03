@@ -1,0 +1,5 @@
+{
+  "publicRequest": ["wf_prepare_nueva_solicitud","wf_next_step","wf_previous_step","wf_submit_request","wf_build_review","wf_validar_datos_generales","wf_validar_areas","wf_validar_servicios","wf_validar_formularios_servicio"],
+  "internalManagement": ["wf_prepare_gestion","wf_prepare_pedido_detalle"],
+  "behavior": "El wizard mantiene tres pasos, datos en borrador y validaciones. Gestión y detalle verifican autenticación y rol antes de cargar recursos internos."
+}

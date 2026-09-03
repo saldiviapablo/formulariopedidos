@@ -37,7 +37,7 @@ Implementado exclusivamente en WeWeb Editor:
 - Pasar un servicio a `Finalizado` exige un enlace HTTPS válido del producto final tanto en la interfaz como en `api_actualizar_servicio`.
 - La View y el endpoint continúan limitados a `equipo_interno` o `admin`.
 
-Se implementaron en Editor Resend, emails transaccionales, solicitud de información faltante e historial de `comunicaciones_pedido`. Siguen pendientes `/seguimiento`, el remitente y dominio definitivos para Production y la publicación en Production.
+Se implementaron en Editor Resend, emails transaccionales, solicitud de información faltante, historial de `comunicaciones_pedido` y `/seguimiento`. Siguen pendientes el remitente y dominio definitivos para Production y la publicación en Production.
 
 ## Principios generales
 
@@ -326,7 +326,18 @@ La exposición del enlace al producto final en esta pantalla queda como una deci
 - No se alteran datos históricos ni catálogos históricos de forma destructiva.
 - No se realiza una migración automática de Fotografía o Audiovisual hacia Cobertura de eventos.
 - Se implementan en Editor Resend, la tabla de comunicaciones, el historial interno y la solicitud de información faltante.
-- Permanecen fuera de alcance `/seguimiento`, el remitente y dominio definitivos de Production y la publicación en Production.
+- Permanecen fuera de alcance el remitente y dominio definitivos de Production y la publicación en Production.
+
+## Desarrollo funcional completo en Editor — 2026-09-03
+
+El desarrollo funcional fue completado y el QA integral fue aprobado exclusivamente en WeWeb Editor. Quedan implementados:
+
+- formulario simplificado, multiselección y `1 PED = 1 servicio`;
+- adjuntos privados, gestión interna, responsables, estados y entrega final;
+- Resend, información faltante e historial de comunicaciones;
+- seguimiento público mediante PED y correo.
+
+La siguiente etapa es UX/UI separada. No implica cambios de Production.
 
 ## Cierre
 

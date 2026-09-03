@@ -1,0 +1,10 @@
+{
+  "pages": [
+    {"name":"Nueva solicitud","path":"/nueva-solicitud","access":"public","languages":["en"]},
+    {"name":"Seguimiento","path":"/seguimiento","access":"public","languages":["en"]},
+    {"name":"Gestión","path":"/gestion","access":"equipo_interno or admin","languages":["en"]},
+    {"name":"Detalle de pedido interno","path":"/gestion/pedido/:pedidoid/detalle","access":"equipo_interno or admin","languages":["en"]},
+    {"name":"Login","path":"/login","access":"public","languages":["en"]},
+    {"name":"Home","path":"/home","access":"public","languages":["en"]}
+  ]
+}

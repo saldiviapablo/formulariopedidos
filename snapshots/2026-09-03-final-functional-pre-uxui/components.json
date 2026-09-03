@@ -1,0 +1,8 @@
+{
+  "components": [
+    {"name":"FileUploader","purpose":"Carga automática de adjuntos privados por token, servicio y categoría."},
+    {"name":"FormInvitacion","purpose":"Formulario reutilizable de invitación."},
+    {"name":"StatusBadge","purpose":"Presentación de estado."},
+    {"name":"EmptyState","purpose":"Estado vacío reutilizable."}
+  ]
+}

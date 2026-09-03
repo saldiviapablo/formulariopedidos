@@ -1,0 +1,11 @@
+{
+  "views": [
+    {"name":"vw_areas_activas","purpose":"Catálogo público de áreas activas."},
+    {"name":"vw_tipos_servicio_activos","purpose":"Catálogo público de tipos activos."},
+    {"name":"vw_servicios_gestion","purpose":"Listado interno filtrable por PED, área, servicio, fecha, estado, responsable y solicitante."},
+    {"name":"vw_pedido_detalle_interno","purpose":"Detalle interno por pedido y servicio."},
+    {"name":"vw_archivos_pedido_interno","purpose":"Metadata interna de adjuntos; no expone rutas ni URLs."},
+    {"name":"vw_comunicaciones_pedido_interno","purpose":"Historial interno de comunicaciones."}
+  ],
+  "security": "Las vistas internas se consumen detrás del control de rol de la interfaz; los recursos internos corresponden a equipo_interno o admin."
+}

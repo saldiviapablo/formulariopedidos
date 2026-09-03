@@ -1,0 +1,18 @@
+{
+  "publicAreas": [
+    {"slug":"diseno_grafico","name":"Diseño gráfico"},
+    {"slug":"cobertura_eventos","name":"Cobertura de eventos"},
+    {"slug":"gacetilla","name":"Gacetilla"},
+    {"slug":"redes_sociales","name":"Publicaciones en redes sociales"}
+  ],
+  "publicServiceTypes": [
+    {"slug":"flyer_rrss","name":"Flyers","area":"diseno_grafico"},
+    {"slug":"invitacion_digital","name":"Invitación","area":"diseno_grafico"},
+    {"slug":"certificado","name":"Certificado","area":"diseno_grafico"},
+    {"slug":"otros_diseno","name":"Otros","area":"diseno_grafico"},
+    {"slug":"cobertura_eventos","name":"Cobertura de eventos","area":"cobertura_eventos"},
+    {"slug":"gacetilla","name":"Gacetilla","area":"gacetilla"},
+    {"slug":"redes_sociales","name":"Publicaciones en redes sociales","area":"redes_sociales"}
+  ],
+  "historicalCatalogs": "Los catálogos inactivos se conservan para resolver relaciones históricas; no se incluyen datos de pedidos."
+}
