@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-09-02 — Redesign 310826 core completado en Editor
+
+Se implementó y validó manualmente el core del nuevo flujo público exclusivamente en WeWeb Editor.
+
+- Se activaron las cuatro áreas públicas y los formularios definitivos.
+- Se preservó multiselección y la regla `1 servicio o pieza = 1 PED`.
+- Se incorporó upload automático aislado por servicio, revisión con adjuntos y acceso interno seguro a archivos privados.
+- Se corrigió el progreso a tres pasos y se preservó compatibilidad con pedidos históricos.
+- Permanecen pendientes Resend, emails, producto final, comunicaciones, `/seguimiento` y publicación Production.
+
 ## 2026-09-01 — Especificación funcional redesign 310826 cerrada
 
 Se cerró la especificación funcional del nuevo flujo público y su gestión futura. Todavía no implementada en WeWeb.

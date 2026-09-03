@@ -1,0 +1,701 @@
+{
+  "results": {
+    "workflows": {
+      "function": [
+        {
+          "id": "5ed3f109-d04a-443a-9bf5-bc094b96badc",
+          "name": "wf_update_service_draft",
+          "parameters": [
+            {
+              "name": "serviceKey",
+              "type": "string"
+            },
+            {
+              "name": "field",
+              "type": "string"
+            },
+            {
+              "name": "value",
+              "type": "any"
+            }
+          ],
+          "actions": {
+            "__RETURN__": {
+              "id": "__RETURN__",
+              "code": "return variables['f7aaa261-e3b1-4aa1-855b-649ff8dca663']?.[context.parameters['serviceKey']] || {};",
+              "name": "Devolver draft actualizado",
+              "next": null,
+              "type": "custom-js",
+              "__wwdescription": "Devuelve solamente el draft del servicio actualizado."
+            },
+            "__UPDATE__": {
+              "id": "__UPDATE__",
+              "name": "Actualizar campo del servicio",
+              "next": "__RETURN__",
+              "type": "update-variable",
+              "varId": "f7aaa261-e3b1-4aa1-855b-649ff8dca663",
+              "varValue": {
+                "code": "const drafts = { ...(variables['f7aaa261-e3b1-4aa1-855b-649ff8dca663'] || {}) }; const key = context.parameters['serviceKey']; const current = drafts[key] || { tipo_servicio_slug: key, data: {}, files: [] }; drafts[key] = { ...current, data: { ...(current.data || {}), [context.parameters['field']]: context.parameters['value'] } }; return drafts;",
+                "__wwtype": "js",
+                "defaultValue": {}
+              },
+              "__wwdescription": "Fusiona el campo recibido en la clave de servicio indicada."
+            }
+          },
+          "folder": "PEDIDOS/Nueva solicitud/",
+          "firstAction": "__UPDATE__",
+          "firstErrorAction": null,
+          "description": "Actualiza un único campo dentro del draft de un servicio sin sobrescribir otros servicios."
+        },
+        {
+          "id": "fdb4e349-b84c-4b80-a0b8-b9aad92710ba",
+          "name": "wf_remove_service_from_draft",
+          "parameters": [
+            {
+              "name": "serviceKey",
+              "type": "string"
+            }
+          ],
+          "actions": {
+            "__REMOVE_DRAFT__": {
+              "id": "__REMOVE_DRAFT__",
+              "name": "Quitar draft",
+              "next": "__REMOVE_ERROR__",
+              "type": "update-variable",
+              "varId": "f7aaa261-e3b1-4aa1-855b-649ff8dca663",
+              "varValue": {
+                "code": "const drafts = { ...(variables['f7aaa261-e3b1-4aa1-855b-649ff8dca663'] || {}) }; delete drafts[context.parameters['serviceKey']]; return drafts;",
+                "__wwtype": "js",
+                "defaultValue": {}
+              },
+              "__wwdescription": "Elimina la clave del draft sin tocar otros servicios."
+            },
+            "__REMOVE_ERROR__": {
+              "id": "__REMOVE_ERROR__",
+              "name": "Quitar error",
+              "next": null,
+              "type": "update-variable",
+              "varId": "3a3e0b80-4707-4eb1-b909-a7838a963f22",
+              "varValue": {
+                "code": "const errors = { ...(variables['3a3e0b80-4707-4eb1-b909-a7838a963f22'] || {}) }; delete errors[`service:${context.parameters['serviceKey']}`]; return errors;",
+                "__wwtype": "js",
+                "defaultValue": {}
+              },
+              "__wwdescription": "Elimina el error asociado al servicio."
+            },
+            "__REMOVE_SELECTION__": {
+              "id": "__REMOVE_SELECTION__",
+              "name": "Quitar selección",
+              "next": "__REMOVE_DRAFT__",
+              "type": "update-variable",
+              "varId": "b2bfecfa-c7c5-479a-ad7f-5ef51542ff0f",
+              "varValue": {
+                "code": "return (variables['b2bfecfa-c7c5-479a-ad7f-5ef51542ff0f'] || []).filter(service => service?.tipo_servicio_slug !== context.parameters['serviceKey']);",
+                "__wwtype": "js",
+                "defaultValue": []
+              },
+              "__wwdescription": "Elimina el servicio de selectedServices."
+            }
+          },
+          "folder": "PEDIDOS/Nueva solicitud/",
+          "firstAction": "__REMOVE_SELECTION__",
+          "firstErrorAction": null,
+          "description": "Quita un servicio, su draft y su error relacionado."
+        },
+        {
+          "id": "dc5c5a91-7f67-441d-9894-29ee4ff6c075",
+          "name": "wf_validar_datos_generales",
+          "parameters": [],
+          "actions": {
+            "__RESULT__": {
+              "id": "__RESULT__",
+              "code": "const errors = variables['3a3e0b80-4707-4eb1-b909-a7838a963f22'] || {}; return !['nombre_apellido','telefono','correo','area_solicitante'].some(key => Boolean(errors[key]));",
+              "name": "Resultado de validación",
+              "next": null,
+              "type": "custom-js",
+              "__wwdescription": "Indica si los datos generales son válidos."
+            },
+            "__VALIDATE__": {
+              "id": "__VALIDATE__",
+              "name": "Validar datos generales",
+              "next": "__RESULT__",
+              "type": "update-variable",
+              "varId": "3a3e0b80-4707-4eb1-b909-a7838a963f22",
+              "varValue": {
+                "code": "const errors = { ...(variables['3a3e0b80-4707-4eb1-b909-a7838a963f22'] || {}) }; const draft = variables['d629c094-3efb-45c0-bfc7-e819defc53a1'] || {}; for (const key of ['nombre_apellido','telefono','correo','area_solicitante']) delete errors[key]; if (!String(draft.nombre_apellido || '').trim()) errors.nombre_apellido = 'Ingresá nombre y apellido.'; if (!String(draft.telefono || '').trim()) errors.telefono = 'Ingresá un teléfono.'; if (!String(draft.correo || '').trim()) errors.correo = 'Ingresá un correo electrónico.'; else if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(draft.correo)) errors.correo = 'Ingresá un correo válido.'; if (!String(draft.area_solicitante || '').trim()) errors.area_solicitante = 'Ingresá el área o dependencia.'; return errors;",
+                "__wwtype": "js",
+                "defaultValue": {}
+              },
+              "__wwdescription": "Guarda mensajes públicos por campo y conserva errores de otros pasos."
+            }
+          },
+          "folder": "PEDIDOS/Nueva solicitud/",
+          "firstAction": "__VALIDATE__",
+          "firstErrorAction": null,
+          "description": "Valida campos generales obligatorios y el formato del correo."
+        },
+        {
+          "id": "8e20182a-d20e-41a1-b449-cfee39b8e29c",
+          "name": "wf_validar_areas",
+          "parameters": [],
+          "actions": {
+            "__RESULT__": {
+              "id": "__RESULT__",
+              "code": "return (variables['0f8165f8-e41b-49bf-9846-2e143ef72370'] || []).length > 0;",
+              "name": "Resultado de validación",
+              "next": null,
+              "type": "custom-js",
+              "__wwdescription": "Indica si existe un área elegida."
+            },
+            "__VALIDATE__": {
+              "id": "__VALIDATE__",
+              "name": "Validar áreas",
+              "next": "__RESULT__",
+              "type": "update-variable",
+              "varId": "3a3e0b80-4707-4eb1-b909-a7838a963f22",
+              "varValue": {
+                "code": "const errors = { ...(variables['3a3e0b80-4707-4eb1-b909-a7838a963f22'] || {}) }; if ((variables['0f8165f8-e41b-49bf-9846-2e143ef72370'] || []).length === 0) errors.areas = 'Seleccioná al menos un área.'; else delete errors.areas; return errors;",
+                "__wwtype": "js",
+                "defaultValue": {}
+              },
+              "__wwdescription": "Agrega o quita el error general de áreas."
+            }
+          },
+          "folder": "PEDIDOS/Nueva solicitud/",
+          "firstAction": "__VALIDATE__",
+          "firstErrorAction": null,
+          "description": "Exige al menos un área activa seleccionada."
+        },
+        {
+          "id": "9458428f-de87-422d-aee2-cda23dfb4b66",
+          "name": "wf_validar_servicios",
+          "parameters": [],
+          "actions": {
+            "__RESULT__": {
+              "id": "__RESULT__",
+              "code": "const areas=variables['0f8165f8-e41b-49bf-9846-2e143ef72370']||[]; const services=variables['b2bfecfa-c7c5-479a-ad7f-5ef51542ff0f']||[]; return areas.length>0&&areas.every(area=>services.some(service=>service?.area_id===area?.id));",
+              "name": "Resultado de validación",
+              "next": null,
+              "type": "custom-js",
+              "__wwdescription": "Sólo es válido cuando cada área posee al menos un servicio."
+            },
+            "__VALIDATE__": {
+              "id": "__VALIDATE__",
+              "name": "Validar servicios",
+              "next": "__RESULT__",
+              "type": "update-variable",
+              "varId": "3a3e0b80-4707-4eb1-b909-a7838a963f22",
+              "varValue": {
+                "code": "const errors={...(variables['3a3e0b80-4707-4eb1-b909-a7838a963f22']||{})};\nconst areas=variables['0f8165f8-e41b-49bf-9846-2e143ef72370']||[];\nconst services=variables['b2bfecfa-c7c5-479a-ad7f-5ef51542ff0f']||[];\ndelete errors.services;\nfor(const key of Object.keys(errors)) if(key.startsWith('area:')) delete errors[key];\nif(areas.length===0) errors.services='Seleccioná al menos un área y un servicio.';\nfor(const area of areas){\n  if(!services.some(service=>service?.area_id===area?.id)){\n    errors[`area:${area?.slug}`]=`Seleccioná al menos un servicio de ${area?.nombre}.`;\n  }\n}\nif(areas.length>0&&services.length===0) errors.services='Cada área seleccionada debe tener al menos un servicio.';\nreturn errors;",
+                "__wwtype": "js",
+                "defaultValue": {}
+              },
+              "__wwdescription": "Crea un error independiente por cada área seleccionada que no tenga servicios."
+            }
+          },
+          "folder": "PEDIDOS/Nueva solicitud/",
+          "firstAction": "__VALIDATE__",
+          "firstErrorAction": null,
+          "description": "Exige al menos un servicio seleccionado dentro de cada área activa."
+        },
+        {
+          "id": "8187b6e5-4e28-4c73-a0b7-b5ed989d4037",
+          "name": "wf_validar_formularios_servicio",
+          "parameters": [],
+          "actions": {
+            "__RESULT__": {
+              "id": "__RESULT__",
+              "code": "const e=variables['3a3e0b80-4707-4eb1-b909-a7838a963f22']||{};return !Object.keys(e).some(k=>k.startsWith('service:'));",
+              "name": "Resultado de formularios",
+              "next": null,
+              "type": "custom-js",
+              "__wwdescription": "Es válido cuando no queda ningún error de servicio activo."
+            },
+            "__VALIDATE__": {
+              "id": "__VALIDATE__",
+              "name": "Validar formularios core",
+              "next": "__RESULT__",
+              "type": "update-variable",
+              "varId": "3a3e0b80-4707-4eb1-b909-a7838a963f22",
+              "varValue": {
+                "code": "const errors={...(variables['3a3e0b80-4707-4eb1-b909-a7838a963f22']||{})};\nconst selected=variables['b2bfecfa-c7c5-479a-ad7f-5ef51542ff0f']||[];\nconst drafts=variables['f7aaa261-e3b1-4aa1-855b-649ff8dca663']||{};\nfor(const key of Object.keys(errors)) if(key.startsWith('service:')) delete errors[key];\nconst empty=v=>v===null||v===undefined||(typeof v==='string'&&!v.trim())||(Array.isArray(v)&&v.length===0);\nconst set=(slug,key,message)=>{errors[`service:${slug}:${key}`]=message;};\nconst requireFields=(slug,data,fields)=>{for(const [key,message] of fields) if(empty(data?.[key])) set(slug,key,message);};\nconst parts=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Argentina/Ushuaia',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());\nconst today=`${parts.find(x=>x.type==='year')?.value}-${parts.find(x=>x.type==='month')?.value}-${parts.find(x=>x.type==='day')?.value}`;\nconst validDate=v=>/^\\d{4}-\\d{2}-\\d{2}$/.test(String(v||''));\nconst validTime=v=>/^(?:[01]\\d|2[0-3]):[0-5]\\d$/.test(String(v||''));\nconst validUrl=v=>empty(v)||/^https?:\\/\\/\\S+$/i.test(String(v).trim());\nfor(const service of selected){\n const slug=service?.tipo_servicio_slug,data=drafts[slug]?.data||{};\n if(slug==='flyer_rrss'){\n  requireFields(slug,data,[['fecha','Ingresá la fecha.'],['titulo','Ingresá el título.'],['detalle','Ingresá las especificaciones o el detalle.']]);\n  if(!empty(data.fecha)&&(!validDate(data.fecha)||data.fecha<=today)) set(slug,'fecha','La fecha debe ser posterior al día de hoy.');\n  if(!validUrl(data.link)) set(slug,'link','Ingresá una URL válida que comience con http:// o https://.');\n }\n if(slug==='invitacion_digital'){\n  requireFields(slug,data,[['fecha','Ingresá la fecha.'],['detalle','Ingresá las especificaciones o el detalle.']]);\n  if(!empty(data.fecha)&&(!validDate(data.fecha)||data.fecha<today)) set(slug,'fecha','La fecha no puede ser anterior al día de hoy.');\n }\n if(slug==='certificado') requireFields(slug,data,[['detalle','Ingresá las especificaciones o el detalle.']]);\n if(slug==='otros_diseno') requireFields(slug,data,[['detalle','Ingresá las especificaciones o el detalle.']]);\n if(slug==='cobertura_eventos'){\n  requireFields(slug,data,[['descripcion_evento','Ingresá la descripción del evento.'],['asisten_autoridades','Indicá si asisten autoridades.'],['fecha','Ingresá la fecha.'],['hora_inicio','Ingresá la hora de inicio.'],['lugar','Ingresá el lugar.'],['ciudad','Ingresá la ciudad.']]);\n  if(data.asisten_autoridades!==true&&data.asisten_autoridades!==false) set(slug,'asisten_autoridades','Seleccioná Sí o No.');\n  if(data.asisten_autoridades===true&&empty(data.autoridades)) set(slug,'autoridades','Indicá quiénes son las autoridades.');\n  if(!empty(data.fecha)&&(!validDate(data.fecha)||data.fecha<today)) set(slug,'fecha','La fecha no puede ser anterior al día de hoy.');\n  if(!empty(data.hora_inicio)&&!validTime(data.hora_inicio)) set(slug,'hora_inicio','Ingresá una hora válida en formato HH:mm.');\n  if(!empty(data.hora_fin)&&!validTime(data.hora_fin)) set(slug,'horario','Ingresá una hora de finalización válida en formato HH:mm.');\n  else if(!empty(data.hora_fin)&&validTime(data.hora_inicio)&&data.hora_fin<=data.hora_inicio) set(slug,'horario','La hora de finalización debe ser posterior a la hora de inicio.');\n }\n if(slug==='gacetilla') requireFields(slug,data,[['contacto_nombre','Ingresá nombre y apellido del contacto.'],['contacto_whatsapp','Ingresá el WhatsApp del contacto.']]);\n if(slug==='redes_sociales'){\n  requireFields(slug,data,[['fecha_publicacion','Ingresá la fecha de publicación.'],['copy','Ingresá el copy o texto completo.']]);\n  if(!empty(data.fecha_publicacion)&&(!validDate(data.fecha_publicacion)||data.fecha_publicacion<today)) set(slug,'fecha_publicacion','La fecha no puede ser anterior al día de hoy.');\n  if(!validUrl(data.link)) set(slug,'link','Ingresá una URL válida que comience con http:// o https://.');\n }\n if(!['flyer_rrss','invitacion_digital','certificado','otros_diseno','cobertura_eventos','gacetilla','redes_sociales'].includes(slug)) errors[`service:${slug}`]='El servicio seleccionado no pertenece al catálogo público vigente.';\n}\nreturn errors;",
+                "__wwtype": "js",
+                "defaultValue": {}
+              },
+              "__wwdescription": "Valida campos, fechas de Ushuaia, URL y horarios del rediseño."
+            },
+            "__SYNC_DRAFTS__": {
+              "id": "__SYNC_DRAFTS__",
+              "name": "Sincronizar formularios core",
+              "next": "__VALIDATE__",
+              "type": "update-variable",
+              "varId": "f7aaa261-e3b1-4aa1-855b-649ff8dca663",
+              "varValue": {
+                "code": "const selected=variables['b2bfecfa-c7c5-479a-ad7f-5ef51542ff0f']||[];\nconst existing=variables['f7aaa261-e3b1-4aa1-855b-649ff8dca663']||{};\nconst maps={\n flyer_rrss:{fecha:'a6b640bc-c682-4f28-8bbe-b0748f0ad7f2',titulo:'3b1d6f42-6d19-41b5-8e7b-1fffdbaa1ec1',detalle:'9f1c5be0-bc21-41c5-bda7-19259e1e55cc',link:'d66e423d-f657-46b4-a56f-bb8bc95eb127'},\n invitacion_digital:{fecha:'3ef081e7-9db6-46ee-bb71-4b142827976d',detalle:'7246239b-54b8-42d1-8e25-c2d4ee1dc2d7'},\n certificado:{detalle:'c2e944fc-81b5-4adc-81c5-147e272856fd'},\n otros_diseno:{detalle:'f33f88d9-07d9-4598-885e-ecfd1a41690d'},\n cobertura_eventos:{descripcion_evento:'0d4309be-923c-4317-89fe-0f0209859a63',asisten_autoridades:'4c8c22c9-81d7-4ddb-9775-47492329b54d',autoridades:'699a9b86-fa48-4605-a439-6250e17a0411',fecha:'4687897f-6771-4432-8738-a074725462a9',hora_inicio:'dfa3b419-5a67-4a09-ba47-77a9867834f9',hora_fin:'d30dae29-8137-4705-a656-116f9a51f932',lugar:'fb8cac2b-7092-4f09-9945-995a98939beb',ciudad:'51f0bb3e-6ea3-46fd-9671-c68569e99992'},\n gacetilla:{aclaracion:'3c85950a-a139-480c-8250-201596680009',contacto_nombre:'35ec87da-ab39-44f4-aa9f-74b16efbf3c4',contacto_whatsapp:'ec6b41e2-f9e8-4b3c-804d-8986c8a2d5fd',contacto_informacion:'8efd53e1-a1ab-44c7-930d-469b6437b791'},\n redes_sociales:{fecha_publicacion:'817eae1a-ff54-4833-ad56-b45585e41895',copy:'39e1b5dc-31fe-4c40-839f-f55f1d8221fa',link:'df9059b9-e52c-46c8-b749-03b2e5d6407c'}\n};\nconst timeKeys=new Set(['hora_inicio','hora_fin']);\nconst next={};\nfor(const service of selected){\n const slug=service?.tipo_servicio_slug;\n const previous=existing[slug]||{area_id:service?.area_id,area_slug:service?.area_slug,tipo_servicio_id:service?.tipo_servicio_id,tipo_servicio_slug:slug,data:{},files:[]};\n const data={};\n for(const [key,inputUid] of Object.entries(maps[slug]||{})){\n  const raw=variables[inputUid+'-value'];\n  data[key]=timeKeys.has(key)?String(raw||'').slice(0,5):raw;\n }\n if(slug==='cobertura_eventos'&&data.asisten_autoridades!==true) data.autoridades='';\n next[slug]={...previous,area_id:service?.area_id,area_slug:service?.area_slug,tipo_servicio_id:service?.tipo_servicio_id,tipo_servicio_slug:slug,data,files:Array.isArray(previous.files)?previous.files:[]};\n}\nreturn next;",
+                "__wwtype": "js",
+                "defaultValue": {}
+              },
+              "__wwdescription": "Sincroniza únicamente los siete formularios públicos vigentes y conserva sus archivos."
+            }
+          },
+          "folder": "PEDIDOS/Nueva solicitud/",
+          "firstAction": "__SYNC_DRAFTS__",
+          "firstErrorAction": null,
+          "description": "Sincroniza y valida los formularios definitivos del rediseño core en zona America/Argentina/Ushuaia."
+        },
+        {
+          "id": "b330631a-ad6e-4a58-92ca-ae8200983625",
+          "name": "wf_validar_revision_final",
+          "parameters": [],
+          "actions": {
+            "__RESULT__": {
+              "id": "__RESULT__",
+              "code": "return variables['20cf8190-d5da-4846-a0f8-ce755e549938-value'] === true && variables['ed0416d7-01fc-456e-87e4-b6e604385b06-value'] === true;",
+              "name": "Resultado final",
+              "next": null,
+              "type": "custom-js",
+              "__wwdescription": "Indica si ambas confirmaciones están marcadas."
+            },
+            "__VALIDATE__": {
+              "id": "__VALIDATE__",
+              "name": "Validar confirmaciones",
+              "next": "__RESULT__",
+              "type": "update-variable",
+              "varId": "3a3e0b80-4707-4eb1-b909-a7838a963f22",
+              "varValue": {
+                "code": "const errors = { ...(variables['3a3e0b80-4707-4eb1-b909-a7838a963f22'] || {}) }; if (variables['20cf8190-d5da-4846-a0f8-ce755e549938-value'] === true && variables['ed0416d7-01fc-456e-87e4-b6e604385b06-value'] === true) delete errors.confirmations; else errors.confirmations = 'Confirmá ambas declaraciones para continuar.'; return errors;",
+                "__wwtype": "js",
+                "defaultValue": {}
+              },
+              "__wwdescription": "Guarda un mensaje controlado si falta alguna declaración."
+            }
+          },
+          "folder": "PEDIDOS/Nueva solicitud/",
+          "firstAction": "__VALIDATE__",
+          "firstErrorAction": null,
+          "description": "Verifica las dos confirmaciones antes del estado final de UI."
+        },
+        {
+          "id": "dba09a32-d73d-45ca-a60e-95352b22661a",
+          "name": "wf_previous_step",
+          "parameters": [],
+          "actions": {
+            "__BACK__": {
+              "id": "__BACK__",
+              "name": "Volver al paso anterior",
+              "next": null,
+              "type": "update-variable",
+              "varId": "42dabee4-e243-454b-85c7-f146546bb13d",
+              "varValue": {
+                "code": "return Math.max(1, (variables['42dabee4-e243-454b-85c7-f146546bb13d'] || 1) - 1);",
+                "__wwtype": "js",
+                "defaultValue": 1
+              },
+              "__wwdescription": "Reduce el paso hasta un mínimo de uno."
+            }
+          },
+          "folder": "PEDIDOS/Nueva solicitud/",
+          "firstAction": "__BACK__",
+          "firstErrorAction": null,
+          "description": "Permite volver atrás sin limpiar datos todavía activos."
+        },
+        {
+          "id": "82263838-afab-493c-9c25-7b5197943b38",
+          "name": "wf_submit_request",
+          "parameters": [],
+          "actions": {
+            "TRY_SUBMIT": {
+              "id": "TRY_SUBMIT",
+              "name": "Crear pedido completo",
+              "next": null,
+              "type": "trycatch",
+              "catch": true,
+              "finally": false,
+              "branches": [
+                {
+                  "id": "CALL_CREATE",
+                  "value": "try"
+                },
+                {
+                  "id": "SET_TECH_ERROR",
+                  "value": "catch"
+                }
+              ],
+              "__wwdescription": "Maneja respuestas controladas y fallos técnicos sin perder el formulario."
+            },
+            "CALL_CREATE": {
+              "id": "CALL_CREATE",
+              "args": {
+                "headers": {},
+                "__wwstream": false
+              },
+              "name": "Persistir pedido completo",
+              "next": "IF_CREATE_SUCCESS",
+              "type": "execute-backend-workflow:819b8329-94b8-4a7d-929f-ce7a477c9161",
+              "parameters": {
+                "payload": {
+                  "code": "return context.workflow['BUILD_PAYLOAD'].result.payload",
+                  "__wwtype": "js"
+                }
+              },
+              "__wwdescription": "Invoca la transacción atómica con el token actual y metadatos de Storage Private."
+            },
+            "SHOW_SUCCESS": {
+              "id": "SHOW_SUCCESS",
+              "name": "Mostrar confirmación",
+              "next": "STOP_AFTER_SUCCESS",
+              "type": "update-variable",
+              "varId": "42dabee4-e243-454b-85c7-f146546bb13d",
+              "varValue": 4,
+              "__wwdescription": "Muestra una tarjeta por PED después de persistir."
+            },
+            "BUILD_PAYLOAD": {
+              "id": "BUILD_PAYLOAD",
+              "code": "const pedido={...(variables['d629c094-3efb-45c0-bfc7-e819defc53a1']||{})};\nconst areas=variables['0f8165f8-e41b-49bf-9846-2e143ef72370']||[],selected=variables['b2bfecfa-c7c5-479a-ad7f-5ef51542ff0f']||[],drafts=variables['f7aaa261-e3b1-4aa1-855b-649ff8dca663']||{};\nconst catalog=globalContext.tableViews['81d107b4-a6a0-407e-9295-360635e82f5a']?.data||[];\nconst areaOrder=new Map(areas.map((a,i)=>[a?.id,i]));\nconst serviceOrder=new Map(catalog.map(s=>[s?.id,Number(s?.orden||0)]));\nconst ordered=[...selected].sort((a,b)=>(areaOrder.get(a?.area_id)??999)-(areaOrder.get(b?.area_id)??999)||(serviceOrder.get(a?.tipo_servicio_id)??999)-(serviceOrder.get(b?.tipo_servicio_id)??999)||String(a?.tipo_servicio_slug||'').localeCompare(String(b?.tipo_servicio_slug||'')));\nconst token=String(variables['d2b3858b-e236-4a97-ad7f-d8073514afa1']||'').trim();\nconst servicios=ordered.map(s=>{const slug=s?.tipo_servicio_slug||'',draft=drafts[slug]||{};return{area_id:s?.area_id,tipo_servicio_id:s?.tipo_servicio_id,informacion_especifica:{...(draft.data||{})},archivos:Array.isArray(draft.files)?draft.files:[]};});\nconst areaSlugs=areas.map(a=>a?.slug).filter(Boolean);\nif(!token||!pedido.nombre_apellido||!pedido.telefono||!pedido.correo||!pedido.area_solicitante||!areaSlugs.length||!servicios.length)return{valid:false,message:'Faltan datos obligatorios de la solicitud.'};\nreturn{valid:true,payload:{submission_token:token,pedido:{nombre_apellido:String(pedido.nombre_apellido).trim(),telefono:String(pedido.telefono).trim(),correo:String(pedido.correo).trim(),area_solicitante:String(pedido.area_solicitante).trim(),tipos_pedido:areaSlugs},servicios}};",
+              "name": "Construir payload autorizado",
+              "next": "IF_PAYLOAD_VALID",
+              "type": "custom-js",
+              "__wwdescription": "Construye un payload ordenado determinísticamente, con un objeto por servicio y sus archivos."
+            },
+            "CHECK_CONFIRM": {
+              "id": "CHECK_CONFIRM",
+              "name": "Comprobar confirmaciones",
+              "next": null,
+              "type": "if",
+              "value": {
+                "code": "return variables['20cf8190-d5da-4846-a0f8-ce755e549938-value']===true&&variables['ed0416d7-01fc-456e-87e4-b6e604385b06-value']===true",
+                "__wwtype": "js"
+              },
+              "branches": [
+                {
+                  "id": "BUILD_PAYLOAD",
+                  "value": true
+                },
+                {
+                  "id": "CONFIRM_ERROR",
+                  "value": false
+                }
+              ],
+              "__wwdescription": "Exige ambas declaraciones antes del envío."
+            },
+            "CONFIRM_ERROR": {
+              "id": "CONFIRM_ERROR",
+              "name": "Mostrar error de confirmación",
+              "next": null,
+              "type": "update-variable",
+              "varId": "3a3e0b80-4707-4eb1-b909-a7838a963f22",
+              "varValue": {
+                "code": "return {...(variables['3a3e0b80-4707-4eb1-b909-a7838a963f22']||{}),confirmations:'Confirmá ambas declaraciones para continuar.'}",
+                "__wwtype": "js"
+              },
+              "__wwdescription": "Mantiene el formulario para corregirlo."
+            },
+            "PAYLOAD_ERROR": {
+              "id": "PAYLOAD_ERROR",
+              "name": "Mostrar validación de envío",
+              "next": null,
+              "type": "update-variable",
+              "varId": "3a3e0b80-4707-4eb1-b909-a7838a963f22",
+              "varValue": {
+                "code": "return {...(variables['3a3e0b80-4707-4eb1-b909-a7838a963f22']||{}),submit:context.workflow['BUILD_PAYLOAD'].result.message}",
+                "__wwtype": "js"
+              },
+              "__wwdescription": "Conserva el token, datos y archivos para corregir."
+            },
+            "SET_API_ERROR": {
+              "id": "SET_API_ERROR",
+              "name": "Guardar rechazo del backend",
+              "next": "API_VALIDATION_ERROR",
+              "type": "update-variable",
+              "varId": "1116238b-c873-4841-ae0d-5e14676a77a2",
+              "varValue": {
+                "code": "const r=context.workflow['CALL_CREATE'].result; const body=r?.data??r?.body??r; return {status:'error',persisted:false,code:body?.code||'REQUEST_REJECTED',message:body?.message||'No fue posible crear el pedido.'};",
+                "__wwtype": "js"
+              },
+              "__wwdescription": "Conserva el formulario, token y archivos para corregir o reintentar."
+            },
+            "STORE_SUCCESS": {
+              "id": "STORE_SUCCESS",
+              "name": "Guardar resultado real",
+              "next": "SHOW_SUCCESS",
+              "type": "update-variable",
+              "varId": "1116238b-c873-4841-ae0d-5e14676a77a2",
+              "varValue": {
+                "code": "const response=context.workflow['CALL_CREATE'].result;\nconst body=response?.data??response?.body??response;\nconst pedidos=Array.isArray(body?.pedidos_creados)?body.pedidos_creados:[];\nconst totalServicios=Number(body?.total_servicios||pedidos.length);\nreturn {\n  status:'success',\n  persisted:true,\n  pedidos_creados:pedidos,\n  total_pedidos:Number(body?.total_pedidos||pedidos.length),\n  total_servicios:totalServicios,\n  archivos_creados:Number(body?.archivos_creados||0),\n  message:pedidos.length===1?'Se generó 1 pedido.':`Se generaron ${pedidos.length} pedidos.`\n};",
+                "__wwtype": "js"
+              },
+              "__wwdescription": "Guarda la lista real de PED generados por servicio sin exponer UUID al solicitante."
+            },
+            "SET_SUBMITTING": {
+              "id": "SET_SUBMITTING",
+              "name": "Activar envío",
+              "next": "CLEAR_SUBMIT_ERROR",
+              "type": "update-variable",
+              "varId": "15744742-a615-49c7-a582-754a7bbeb6bf",
+              "varValue": true,
+              "__wwdescription": "Bloquea el botón para evitar dobles envíos."
+            },
+            "SET_TECH_ERROR": {
+              "id": "SET_TECH_ERROR",
+              "name": "Guardar error técnico",
+              "next": "TECH_VALIDATION_ERROR",
+              "type": "update-variable",
+              "varId": "1116238b-c873-4841-ae0d-5e14676a77a2",
+              "varValue": {
+                "code": "INTERNAL_ERROR",
+                "status": "error",
+                "message": "No fue posible completar el envío. Intentá nuevamente.",
+                "persisted": false
+              },
+              "__wwdescription": "No borra formulario, token ni referencias privadas."
+            },
+            "STOP_API_ERROR": {
+              "id": "STOP_API_ERROR",
+              "name": "Finalizar rechazo",
+              "next": null,
+              "type": "update-variable",
+              "varId": "15744742-a615-49c7-a582-754a7bbeb6bf",
+              "varValue": false,
+              "__wwdescription": "Permite corregir y volver a enviar con el mismo token."
+            },
+            "STOP_TECH_ERROR": {
+              "id": "STOP_TECH_ERROR",
+              "name": "Finalizar error técnico",
+              "next": null,
+              "type": "update-variable",
+              "varId": "15744742-a615-49c7-a582-754a7bbeb6bf",
+              "varValue": false,
+              "__wwdescription": "Restablece el botón para reintentar."
+            },
+            "IF_PAYLOAD_VALID": {
+              "id": "IF_PAYLOAD_VALID",
+              "name": "¿Solicitud lista?",
+              "next": null,
+              "type": "if",
+              "value": {
+                "code": "return context.workflow['BUILD_PAYLOAD'].result.valid === true",
+                "__wwtype": "js"
+              },
+              "branches": [
+                {
+                  "id": "SET_SUBMITTING",
+                  "value": true
+                },
+                {
+                  "id": "PAYLOAD_ERROR",
+                  "value": false
+                }
+              ],
+              "__wwdescription": "Comprueba datos generales, servicios y adjuntos obligatorios."
+            },
+            "IF_CREATE_SUCCESS": {
+              "id": "IF_CREATE_SUCCESS",
+              "name": "¿Pedido creado?",
+              "next": null,
+              "type": "if",
+              "value": {
+                "code": "const r=context.workflow['CALL_CREATE'].result; const body=r?.data??r?.body??r; return body?.success===true",
+                "__wwtype": "js"
+              },
+              "branches": [
+                {
+                  "id": "STORE_SUCCESS",
+                  "value": true
+                },
+                {
+                  "id": "SET_API_ERROR",
+                  "value": false
+                }
+              ],
+              "__wwdescription": "Separa el resultado persistido de un rechazo controlado."
+            },
+            "CLEAR_SUBMIT_ERROR": {
+              "id": "CLEAR_SUBMIT_ERROR",
+              "name": "Limpiar error anterior",
+              "next": "TRY_SUBMIT",
+              "type": "update-variable",
+              "varId": "3a3e0b80-4707-4eb1-b909-a7838a963f22",
+              "varValue": {
+                "code": "const errors={...(variables['3a3e0b80-4707-4eb1-b909-a7838a963f22']||{})}; delete errors.submit; return errors;",
+                "__wwtype": "js"
+              },
+              "__wwdescription": "Retira mensajes de un intento previo."
+            },
+            "STOP_AFTER_SUCCESS": {
+              "id": "STOP_AFTER_SUCCESS",
+              "name": "Finalizar envío exitoso",
+              "next": null,
+              "type": "update-variable",
+              "varId": "15744742-a615-49c7-a582-754a7bbeb6bf",
+              "varValue": false,
+              "__wwdescription": "Desbloquea la interfaz sin borrar el número ni los datos hasta que el usuario elija crear otra solicitud."
+            },
+            "API_VALIDATION_ERROR": {
+              "id": "API_VALIDATION_ERROR",
+              "name": "Mostrar rechazo del backend",
+              "next": "STOP_API_ERROR",
+              "type": "update-variable",
+              "varId": "3a3e0b80-4707-4eb1-b909-a7838a963f22",
+              "varValue": {
+                "code": "const r=context.workflow['CALL_CREATE'].result; const body=r?.data??r?.body??r; return {...(variables['3a3e0b80-4707-4eb1-b909-a7838a963f22']||{}),submit:body?.message||'No fue posible crear el pedido.'};",
+                "__wwtype": "js"
+              },
+              "__wwdescription": "Presenta un mensaje accionable sin borrar datos."
+            },
+            "TECH_VALIDATION_ERROR": {
+              "id": "TECH_VALIDATION_ERROR",
+              "name": "Mostrar error técnico",
+              "next": "STOP_TECH_ERROR",
+              "type": "update-variable",
+              "varId": "3a3e0b80-4707-4eb1-b909-a7838a963f22",
+              "varValue": {
+                "code": "return {...(variables['3a3e0b80-4707-4eb1-b909-a7838a963f22']||{}),submit:'No fue posible completar el envío. Tus datos y archivos se conservaron para reintentar.'}",
+                "__wwtype": "js"
+              },
+              "__wwdescription": "Ofrece reintento sin pérdida de datos."
+            }
+          },
+          "folder": "PEDIDOS/Nueva solicitud/",
+          "firstAction": "CHECK_CONFIRM",
+          "firstErrorAction": null,
+          "description": "Valida y persiste atómicamente un PED por servicio del flujo core, con archivos privados, reintentos e idempotencia, y muestra una tarjeta por resultado real."
+        },
+        {
+          "id": "8dee177c-f310-47f9-b244-3a5b43bf59a3",
+          "name": "wf_build_review",
+          "parameters": [],
+          "actions": {
+            "__BUILD__": {
+              "id": "__BUILD__",
+              "code": "const pedido=variables['d629c094-3efb-45c0-bfc7-e819defc53a1']||{};\nconst areas=variables['0f8165f8-e41b-49bf-9846-2e143ef72370']||[];\nconst selected=variables['b2bfecfa-c7c5-479a-ad7f-5ef51542ff0f']||[];\nconst drafts=variables['f7aaa261-e3b1-4aa1-855b-649ff8dca663']||{};\n\nconst humanValue=(key,raw)=>{\n  let value=raw;\n  if(value&&typeof value==='object'&&!Array.isArray(value)&&Object.prototype.hasOwnProperty.call(value,'no_aplica')) value=value.no_aplica===true?'No aplica':value.value;\n  if(typeof value==='string'&&/(hora|horario)/i.test(key)&&/^\\d{2}:\\d{2}/.test(value)) return value.slice(0,5);\n  return value;\n};\nconst cleanData=data=>Object.fromEntries(Object.entries(data||{}).flatMap(([key,raw])=>{\n  const value=humanValue(key,raw);\n  if(value===null||value===undefined||value===''||(Array.isArray(value)&&value.length===0)||(typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).length===0)) return [];\n  return [[key,value]];\n}));\nconst cleanFiles=files=>(Array.isArray(files)?files:[]).map(file=>({\n  nombre_original:file?.nombre_original||file?.name||file?.original_name||'Archivo adjunto',\n  categoria:file?.categoria||file?.category||''\n}));\n\nconst grupos=areas.map(area=>({\n  area:area.nombre,\n  servicios:selected.filter(service=>service?.area_id===area?.id).map(service=>{\n    const draft=drafts[service?.tipo_servicio_slug]||{};\n    return {servicio:service?.nombre,informacion:cleanData(draft.data),archivos:cleanFiles(draft.files)};\n  })\n})).filter(group=>group.servicios.length);\n\nreturn {\n  aviso_multiples_areas:grupos.length>1?'Se generará un número de pedido independiente para cada área seleccionada.':'',\n  datos_generales:{nombre_apellido:pedido.nombre_apellido,telefono:pedido.telefono,correo:pedido.correo,area_solicitante:pedido.area_solicitante,tipos_pedido:areas.map(a=>a.nombre)},\n  grupos\n};",
+              "name": "Construir revisión",
+              "next": null,
+              "type": "custom-js",
+              "__wwdescription": "Agrupa por área y pieza, humaniza HH:mm/No aplica y agrega nombres y categorías de adjuntos sin IDs ni paths."
+            }
+          },
+          "folder": "PEDIDOS/Nueva solicitud/",
+          "firstAction": "__BUILD__",
+          "firstErrorAction": null,
+          "description": "Construye la revisión agrupada por área y limpia ramas, vacíos y claves técnicas."
+        },
+        {
+          "id": "97b06c5f-7470-4bf1-917f-9c785ef1d241",
+          "name": "wf_next_step",
+          "parameters": [],
+          "actions": {
+            "__ADVANCE__": {
+              "id": "__ADVANCE__",
+              "name": "Avanzar",
+              "next": null,
+              "type": "update-variable",
+              "varId": "42dabee4-e243-454b-85c7-f146546bb13d",
+              "varValue": {
+                "code": "return Math.min(3,(variables['42dabee4-e243-454b-85c7-f146546bb13d']||1)+1)",
+                "__wwtype": "js",
+                "defaultValue": 1
+              },
+              "__wwdescription": "Avanza hasta el paso 3 conservando el estado."
+            },
+            "__CHECK_VALID__": {
+              "id": "__CHECK_VALID__",
+              "name": "Comprobar resultado",
+              "next": null,
+              "type": "if",
+              "value": {
+                "code": "const e=variables['3a3e0b80-4707-4eb1-b909-a7838a963f22']||{},s=variables['42dabee4-e243-454b-85c7-f146546bb13d']||1;if(s===1)return !['nombre_apellido','telefono','correo','area_solicitante','areas'].some(k=>Boolean(e[k]));if(s===2)return !e.services&&!Object.keys(e).some(k=>k.startsWith('area:')||k.startsWith('service:'));return false;",
+                "__wwtype": "js",
+                "defaultValue": false
+              },
+              "branches": [
+                {
+                  "id": "__ADVANCE__",
+                  "value": true
+                },
+                {
+                  "id": null,
+                  "value": false
+                }
+              ],
+              "__wwdescription": "Impide avanzar si el paso visible conserva errores."
+            },
+            "__VALIDATE_STEP__": {
+              "id": "__VALIDATE_STEP__",
+              "name": "Validar paso actual",
+              "next": "__CHECK_VALID__",
+              "type": "update-variable",
+              "varId": "3a3e0b80-4707-4eb1-b909-a7838a963f22",
+              "varValue": {
+                "code": "const errors={...(variables['3a3e0b80-4707-4eb1-b909-a7838a963f22']||{})};const step=variables['42dabee4-e243-454b-85c7-f146546bb13d']||1;\nif(step===1){\n const d=variables['d629c094-3efb-45c0-bfc7-e819defc53a1']||{};\n for(const k of ['nombre_apellido','telefono','correo','area_solicitante','areas'])delete errors[k];\n if(!String(d.nombre_apellido||'').trim())errors.nombre_apellido='Ingresá nombre y apellido.';\n if(!String(d.telefono||'').trim())errors.telefono='Ingresá un teléfono.';\n if(!String(d.correo||'').trim())errors.correo='Ingresá un correo electrónico.';else if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(d.correo))errors.correo='Ingresá un correo válido.';\n if(!String(d.area_solicitante||'').trim())errors.area_solicitante='Ingresá el área o dependencia.';\n if(!(variables['0f8165f8-e41b-49bf-9846-2e143ef72370']||[]).length)errors.areas='Seleccioná al menos un área.';\n}\nif(step===2){\n delete errors.services;for(const k of Object.keys(errors))if(k.startsWith('area:'))delete errors[k];\n const areas=variables['0f8165f8-e41b-49bf-9846-2e143ef72370']||[],services=variables['b2bfecfa-c7c5-479a-ad7f-5ef51542ff0f']||[];\n for(const a of areas)if(!services.some(s=>s?.area_id===a?.id))errors[`area:${a?.slug}`]=`Seleccioná al menos un servicio de ${a?.nombre}.`;\n if(!services.length)errors.services='Seleccioná al menos un servicio o pieza.';\n}\nreturn errors;",
+                "__wwtype": "js",
+                "defaultValue": {}
+              },
+              "__wwdescription": "Valida datos y áreas en el paso 1; servicios y formularios en el paso 2."
+            }
+          },
+          "folder": "PEDIDOS/Nueva solicitud/",
+          "firstAction": "__VALIDATE_STEP__",
+          "firstErrorAction": null,
+          "description": "Valida y navega el flujo público simplificado de tres pasos."
+        }
+      ],
+      "page": [
+        {
+          "id": "65a99d53-f07b-4e98-9172-bb08017a3ec1",
+          "name": "wf_prepare_nueva_solicitud",
+          "folder": null,
+          "actions": {
+            "SET_TOKEN": {
+              "id": "SET_TOKEN",
+              "name": "Guardar submission token",
+              "next": "FETCH_AREAS",
+              "type": "update-variable",
+              "varId": "d2b3858b-e236-4a97-ad7f-d8073514afa1",
+              "varValue": {
+                "code": "return context.workflow['GENERATE_TOKEN'].result",
+                "__wwtype": "js"
+              },
+              "__wwdescription": "Mantiene el mismo token durante navegación y reintentos."
+            },
+            "FETCH_AREAS": {
+              "id": "FETCH_AREAS",
+              "name": "Cargar áreas activas",
+              "next": "FETCH_SERVICES",
+              "type": "fetch-table-view",
+              "limit": 100,
+              "offset": 0,
+              "parameters": {},
+              "tableViewId": "3727d8c2-f41d-4b67-9a6c-07a6d34abd59",
+              "__wwdescription": "Actualiza el catálogo público y ordenado de áreas activas."
+            },
+            "FETCH_SERVICES": {
+              "id": "FETCH_SERVICES",
+              "name": "Cargar servicios activos",
+              "next": null,
+              "type": "fetch-table-view",
+              "limit": 200,
+              "offset": 0,
+              "parameters": {},
+              "tableViewId": "81d107b4-a6a0-407e-9295-360635e82f5a",
+              "__wwdescription": "Actualiza el catálogo público de tipos de servicio activos."
+            },
+            "GENERATE_TOKEN": {
+              "id": "GENERATE_TOKEN",
+              "code": "const current=String(variables['d2b3858b-e236-4a97-ad7f-d8073514afa1']||'').trim(); return current || crypto.randomUUID();",
+              "name": "Preparar submission token",
+              "next": "SET_TOKEN",
+              "type": "custom-js",
+              "__wwdescription": "Conserva el token actual o genera un UUID nuevo para idempotencia y aislamiento de archivos."
+            }
+          },
+          "trigger": "onload",
+          "description": "Inicializa el token idempotente y carga catálogos públicos sin exigir sesión.",
+          "firstAction": "GENERATE_TOKEN"
+        }
+      ],
+      "app": []
+    }
+  },
+  "note": "All workflows matching the search criteria have been returned."
+}
+

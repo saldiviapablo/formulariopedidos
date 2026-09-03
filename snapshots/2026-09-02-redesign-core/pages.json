@@ -1,0 +1,144 @@
+[
+  {
+    "id": "027a6d44-7b5b-4160-98ae-6bad99e24e57",
+    "name": "Gestión",
+    "folder": null,
+    "description": "Panel interno de servicios solicitado, restringido por guardia de Interface y recursos backend a equipo_interno y admin.",
+    "title": {
+      "es": "Gestión de solicitudes | PEDIDOS"
+    },
+    "paths": {
+      "en": "gestion",
+      "default": "gestion"
+    },
+    "langs": [
+      "en"
+    ],
+    "favicon": null,
+    "isDraft": false,
+    "hideFromSitemap": true,
+    "prerender": false,
+    "metadata": {
+      "description": {},
+      "keywords": {},
+      "openGraphImage": null,
+      "openGraphDescription": {},
+      "openGraphTitle": {},
+      "structuredData": {}
+    }
+  },
+  {
+    "id": "f742dcb9-9662-44e8-b9d4-c52505827d23",
+    "name": "Detalle de pedido interno",
+    "folder": null,
+    "description": "Detalle interno por pedido con servicios, edición operativa y acceso temporal a archivos privados; exclusivo de equipo_interno y admin.",
+    "title": {
+      "es": "Detalle de pedido | PEDIDOS"
+    },
+    "paths": {
+      "en": "gestion/pedido/{{pedidoid|default}}/detalle",
+      "default": "gestion/pedido/{{pedidoid|default}}/detalle"
+    },
+    "langs": [
+      "en"
+    ],
+    "favicon": null,
+    "isDraft": false,
+    "hideFromSitemap": true,
+    "prerender": false,
+    "metadata": {
+      "description": {},
+      "keywords": {},
+      "openGraphImage": null,
+      "openGraphDescription": {},
+      "openGraphTitle": {},
+      "structuredData": {}
+    }
+  },
+  {
+    "id": "72bfb8d9-76d8-45b5-a049-39f525c49d7e",
+    "name": "Nueva solicitud",
+    "folder": null,
+    "description": "Wizard público de PEDIDOS con portada institucional, formularios por pieza/servicio, adjuntos privados y creación atómica de un PED independiente por cada servicio solicitado.",
+    "title": {
+      "es": "Nueva solicitud | PEDIDOS"
+    },
+    "paths": {
+      "en": "nueva-solicitud",
+      "default": "nueva-solicitud"
+    },
+    "langs": [
+      "en"
+    ],
+    "favicon": null,
+    "isDraft": false,
+    "hideFromSitemap": true,
+    "prerender": false,
+    "metadata": {
+      "description": {},
+      "keywords": {},
+      "openGraphImage": null,
+      "openGraphDescription": {},
+      "openGraphTitle": {},
+      "structuredData": {}
+    }
+  },
+  {
+    "id": "79abd033-367a-45d1-ae9b-e20cf92a6636",
+    "name": "Home",
+    "folder": null,
+    "description": null,
+    "title": {
+      "en": "",
+      "fr": "Vide | Commencer à partir de zéro"
+    },
+    "paths": {
+      "en": "home",
+      "default": "home"
+    },
+    "langs": [
+      "en"
+    ],
+    "favicon": null,
+    "isDraft": false,
+    "hideFromSitemap": null,
+    "prerender": false,
+    "metadata": {
+      "description": {},
+      "keywords": {},
+      "openGraphImage": null,
+      "openGraphDescription": {},
+      "openGraphTitle": {},
+      "structuredData": {}
+    }
+  },
+  {
+    "id": "753b981e-f102-4df7-bcf7-9be83f324404",
+    "name": "Login",
+    "folder": null,
+    "description": "Acceso interno con WeWeb Auth para el sistema PEDIDOS.",
+    "title": {
+      "es": "Ingresar | PEDIDOS"
+    },
+    "paths": {
+      "en": "login",
+      "default": "login"
+    },
+    "langs": [
+      "en"
+    ],
+    "favicon": null,
+    "isDraft": false,
+    "hideFromSitemap": true,
+    "prerender": false,
+    "metadata": {
+      "description": {},
+      "keywords": {},
+      "openGraphImage": null,
+      "openGraphDescription": {},
+      "openGraphTitle": {},
+      "structuredData": {}
+    }
+  }
+]
+

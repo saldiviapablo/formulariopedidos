@@ -2,11 +2,28 @@
 
 ## Estado del documento
 
-Especificación funcional cerrada el 2026-09-01 para implementación futura en WeWeb.
+Especificación funcional cerrada el 2026-09-01 e implementada en el entorno Editor de WeWeb el 2026-09-02.
 
-Todavía no implementada en WeWeb.
+La rama de trabajo es `redesign-310826`. El core público fue implementado sin modificar Production ni migrar datos históricos.
 
-La rama de trabajo documental es `redesign-310826`. Este documento define el comportamiento objetivo sin modificar la implementación actual, los datos históricos ni Production.
+## Estado de implementación — 2026-09-02
+
+Implementado en Editor:
+
+- Rediseño público core de tres pasos.
+- Cuatro áreas públicas: Diseño gráfico, Cobertura de eventos, Gacetilla y Publicaciones en redes sociales.
+- Formularios definitivos, multiselección y creación de un PED independiente por servicio o pieza.
+- Adjuntos automáticos aislados por servicio en WeWeb Storage Private.
+- Revisión agrupada, resultado por ticket y progreso de tres pasos.
+- Compatibilidad histórica conservada, incluido el PED multi-servicio previo.
+
+Pendiente de una fase posterior:
+
+- Producto final, `producto_final_url` y `producto_final_nota`.
+- Resend, emails automáticos y solicitar información faltante.
+- `comunicaciones_pedido`.
+- `/seguimiento`.
+- Publicación en Production.
 
 ## Principios generales
 

@@ -1,0 +1,108 @@
+{
+  "snapshot": "2026-09-02-redesign-core",
+  "projectVariables": "[REDACTED_NOT_EXPORTED]",
+  "environmentVariables": [
+    {
+      "name": "AUTH_SECRET",
+      "secure": true,
+      "values": "[REDACTED]",
+      "configured": {
+        "editor": true,
+        "staging": "[REDACTED]",
+        "production": "[REDACTED]"
+      }
+    },
+    {
+      "name": "DATABASE_URL",
+      "secure": true,
+      "values": "[REDACTED]",
+      "configured": {
+        "editor": true,
+        "staging": "[REDACTED]",
+        "production": "[REDACTED]"
+      }
+    },
+    {
+      "name": "PROVIDER_EMAIL_DISABLE_SIGNUP",
+      "secure": false,
+      "values": "[REDACTED]",
+      "configured": {
+        "editor": true,
+        "staging": "[REDACTED]",
+        "production": "[REDACTED]"
+      }
+    },
+    {
+      "name": "PROVIDER_EMAIL_ENABLED",
+      "secure": false,
+      "values": "[REDACTED]",
+      "configured": {
+        "editor": true,
+        "staging": "[REDACTED]",
+        "production": "[REDACTED]"
+      }
+    },
+    {
+      "name": "PROVIDER_EMAIL_PASSWORD_MIN_LENGTH",
+      "secure": false,
+      "values": "[REDACTED]",
+      "configured": {
+        "editor": true,
+        "staging": "[REDACTED]",
+        "production": "[REDACTED]"
+      }
+    },
+    {
+      "name": "PROVIDER_EMAIL_RESET_PASSWORD_TOKEN_EXPIRES_IN",
+      "secure": false,
+      "values": "[REDACTED]",
+      "configured": {
+        "editor": true,
+        "staging": "[REDACTED]",
+        "production": "[REDACTED]"
+      }
+    },
+    {
+      "name": "PROVIDER_EMAIL_VERIFICATION_ENABLED",
+      "secure": false,
+      "values": "[REDACTED]",
+      "configured": {
+        "editor": true,
+        "staging": "[REDACTED]",
+        "production": "[REDACTED]"
+      }
+    },
+    {
+      "name": "WEWEB_EMAIL_API_KEY",
+      "secure": true,
+      "values": "[REDACTED]",
+      "configured": {
+        "editor": true,
+        "staging": "[REDACTED]",
+        "production": "[REDACTED]"
+      }
+    },
+    {
+      "name": "WEWEB_PROJECT_LOGS_SECRET",
+      "secure": true,
+      "values": "[REDACTED]",
+      "configured": {
+        "editor": true,
+        "staging": "[REDACTED]",
+        "production": "[REDACTED]"
+      }
+    },
+    {
+      "name": "WEWEB_PROJECT_SECRET",
+      "secure": true,
+      "values": "[REDACTED]",
+      "configured": {
+        "editor": true,
+        "staging": "[REDACTED]",
+        "production": "[REDACTED]"
+      }
+    }
+  ],
+  "redaction": "Los valores de variables y secretos no se exportan."
+}
+

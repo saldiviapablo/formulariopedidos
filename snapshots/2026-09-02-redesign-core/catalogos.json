@@ -1,0 +1,303 @@
+{
+  "snapshot": "2026-09-02-redesign-core",
+  "source": "WeWeb MCP Editor",
+  "areas": [
+    {
+      "id": "01a0361b-d5dc-711d-8783-a6655d063226",
+      "nombre": "Diseño gráfico",
+      "slug": "diseno_grafico",
+      "activo": true,
+      "orden": 1,
+      "descripcion": null
+    },
+    {
+      "id": "01a0361b-d5e0-7273-9c40-9e326cd45019",
+      "nombre": "Web",
+      "slug": "web",
+      "activo": false,
+      "orden": 5,
+      "descripcion": null
+    },
+    {
+      "id": "01a0361b-d5e0-7289-a5fa-c292354e2de5",
+      "nombre": "Prensa / Difusión",
+      "slug": "prensa_difusion",
+      "activo": false,
+      "orden": 6,
+      "descripcion": null
+    },
+    {
+      "id": "01a05ea6-f497-79f7-8fb2-0b5e2b0df3ac",
+      "nombre": "Cobertura de eventos",
+      "slug": "cobertura_eventos",
+      "activo": true,
+      "orden": 2,
+      "descripcion": "Cobertura institucional de eventos."
+    },
+    {
+      "id": "01a05ea6-f49b-7e85-974b-5ae8607fc54b",
+      "nombre": "Gacetilla",
+      "slug": "gacetilla",
+      "activo": true,
+      "orden": 3,
+      "descripcion": "Solicitud de redacción de gacetilla."
+    },
+    {
+      "id": "01a0361b-d5e0-719e-b73d-e5d7a8c05765",
+      "nombre": "Fotografía",
+      "slug": "fotografia",
+      "activo": false,
+      "orden": 2,
+      "descripcion": null
+    },
+    {
+      "id": "01a0361b-d5e0-7242-a860-6f6f3e5a7caa",
+      "nombre": "Audiovisual",
+      "slug": "audiovisual",
+      "activo": false,
+      "orden": 3,
+      "descripcion": null
+    },
+    {
+      "id": "01a0361b-d5e0-725d-8095-34e1d9254db3",
+      "nombre": "Publicaciones en redes sociales",
+      "slug": "redes_sociales",
+      "activo": true,
+      "orden": 4,
+      "descripcion": null
+    }
+  ],
+  "tipos_servicio": [
+    {
+      "id": "01a05ea7-2e19-7fb6-acaf-1f9775a4bacd",
+      "nombre": "Cobertura de eventos",
+      "slug": "cobertura_eventos",
+      "activo": true,
+      "orden": 1,
+      "area": "01a05ea6-f497-79f7-8fb2-0b5e2b0df3ac",
+      "descripcion": "Cobertura institucional de eventos.",
+      "configuracion": null
+    },
+    {
+      "id": "01a05ea7-2e1d-7dcb-983d-4462cb9f1d20",
+      "nombre": "Gacetilla",
+      "slug": "gacetilla",
+      "activo": true,
+      "orden": 1,
+      "area": "01a05ea6-f49b-7e85-974b-5ae8607fc54b",
+      "descripcion": "Redacción de gacetilla.",
+      "configuracion": null
+    },
+    {
+      "id": "01a05ea7-2e1d-7e7b-93a5-60a0717b358a",
+      "nombre": "Otros",
+      "slug": "otros_diseno",
+      "activo": true,
+      "orden": 4,
+      "area": "01a0361b-d5dc-711d-8783-a6655d063226",
+      "descripcion": "Otra pieza de diseño gráfico.",
+      "configuracion": null
+    },
+    {
+      "id": "01a0361c-5a40-794b-a36f-e8e565d2c31f",
+      "nombre": "Invitación",
+      "slug": "invitacion_digital",
+      "activo": true,
+      "orden": 2,
+      "area": "01a0361b-d5dc-711d-8783-a6655d063226",
+      "descripcion": null,
+      "configuracion": null
+    },
+    {
+      "id": "01a0361c-5a3c-7621-801a-dc23ef73511c",
+      "nombre": "Flyers",
+      "slug": "flyer_rrss",
+      "activo": true,
+      "orden": 1,
+      "area": "01a0361b-d5dc-711d-8783-a6655d063226",
+      "descripcion": null,
+      "configuracion": null
+    },
+    {
+      "id": "01a0361c-5a40-79eb-88c1-0cd9d13ed8cb",
+      "nombre": "Invitación impresa",
+      "slug": "invitacion_impresa",
+      "activo": false,
+      "orden": 3,
+      "area": "01a0361b-d5dc-711d-8783-a6655d063226",
+      "descripcion": null,
+      "configuracion": null
+    },
+    {
+      "id": "01a0361c-5a40-7a04-80c2-18aca5395271",
+      "nombre": "Banner",
+      "slug": "banner",
+      "activo": false,
+      "orden": 4,
+      "area": "01a0361b-d5dc-711d-8783-a6655d063226",
+      "descripcion": null,
+      "configuracion": null
+    },
+    {
+      "id": "01a0361c-5a40-7a1b-98a6-f01cbd0772d7",
+      "nombre": "Afiche",
+      "slug": "afiche",
+      "activo": false,
+      "orden": 5,
+      "area": "01a0361b-d5dc-711d-8783-a6655d063226",
+      "descripcion": null,
+      "configuracion": null
+    },
+    {
+      "id": "01a0361c-5a40-7a31-9c3a-7e122c3adf5c",
+      "nombre": "Folleto",
+      "slug": "folleto",
+      "activo": false,
+      "orden": 6,
+      "area": "01a0361b-d5dc-711d-8783-a6655d063226",
+      "descripcion": null,
+      "configuracion": null
+    },
+    {
+      "id": "01a0361c-5a40-7a5d-ab21-4797e3184d6a",
+      "nombre": "Cartel externo",
+      "slug": "cartel_externo",
+      "activo": false,
+      "orden": 8,
+      "area": "01a0361b-d5dc-711d-8783-a6655d063226",
+      "descripcion": null,
+      "configuracion": null
+    },
+    {
+      "id": "01a0361c-5a40-7a74-81ec-491cad96fb77",
+      "nombre": "Cartelería",
+      "slug": "carteleria_senaletica",
+      "activo": false,
+      "orden": 9,
+      "area": "01a0361b-d5dc-711d-8783-a6655d063226",
+      "descripcion": null,
+      "configuracion": null
+    },
+    {
+      "id": "01a0361c-5a40-7a8c-aa4c-c824d62ad475",
+      "nombre": "Ploteo vehicular",
+      "slug": "ploteo_vehicular",
+      "activo": false,
+      "orden": 10,
+      "area": "01a0361b-d5dc-711d-8783-a6655d063226",
+      "descripcion": null,
+      "configuracion": null
+    },
+    {
+      "id": "01a0361c-5a40-7aa3-b4a6-1887169890c1",
+      "nombre": "Ploteo de ventanas / edificio",
+      "slug": "ploteo_ventanas_edificio",
+      "activo": false,
+      "orden": 11,
+      "area": "01a0361b-d5dc-711d-8783-a6655d063226",
+      "descripcion": null,
+      "configuracion": null
+    },
+    {
+      "id": "01a0361c-5a40-7ab9-a904-21a42badb22b",
+      "nombre": "Tarjeta personal",
+      "slug": "tarjeta_personal",
+      "activo": false,
+      "orden": 12,
+      "area": "01a0361b-d5dc-711d-8783-a6655d063226",
+      "descripcion": null,
+      "configuracion": null
+    },
+    {
+      "id": "01a0361c-5a40-7ad2-91e8-160bf896f5d1",
+      "nombre": "Web — botón, encabezado, etc.",
+      "slug": "web_recurso_grafico",
+      "activo": false,
+      "orden": 13,
+      "area": "01a0361b-d5dc-711d-8783-a6655d063226",
+      "descripcion": null,
+      "configuracion": null
+    },
+    {
+      "id": "01a0361c-5a40-7ae8-8423-5f851888da2d",
+      "nombre": "Evento",
+      "slug": "evento",
+      "activo": false,
+      "orden": 1,
+      "area": "01a0361b-d5e0-719e-b73d-e5d7a8c05765",
+      "descripcion": null,
+      "configuracion": null
+    },
+    {
+      "id": "01a0361c-5a40-7afe-aefc-ca4ef4744037",
+      "nombre": "Fotografías institucionales",
+      "slug": "fotografias_institucionales",
+      "activo": false,
+      "orden": 2,
+      "area": "01a0361b-d5e0-719e-b73d-e5d7a8c05765",
+      "descripcion": null,
+      "configuracion": null
+    },
+    {
+      "id": "01a0361c-5a40-7b14-9a7f-3b2e5196c294",
+      "nombre": "Fotografías de retrato",
+      "slug": "fotografias_retrato",
+      "activo": false,
+      "orden": 3,
+      "area": "01a0361b-d5e0-719e-b73d-e5d7a8c05765",
+      "descripcion": null,
+      "configuracion": null
+    },
+    {
+      "id": "01a0361c-5a40-7b2b-a719-436a4ed6109e",
+      "nombre": "Otros",
+      "slug": "otros",
+      "activo": false,
+      "orden": 4,
+      "area": "01a0361b-d5e0-719e-b73d-e5d7a8c05765",
+      "descripcion": null,
+      "configuracion": null
+    },
+    {
+      "id": "01a0361c-5a40-7b41-8146-3ab803109f9a",
+      "nombre": "Cobertura Audiovisual",
+      "slug": "cobertura_audiovisual",
+      "activo": false,
+      "orden": 1,
+      "area": "01a0361b-d5e0-7242-a860-6f6f3e5a7caa",
+      "descripcion": null,
+      "configuracion": null
+    },
+    {
+      "id": "01a0361c-5a40-7b57-8978-178033e00082",
+      "nombre": "Producción Audiovisual",
+      "slug": "produccion_audiovisual",
+      "activo": false,
+      "orden": 2,
+      "area": "01a0361b-d5e0-7242-a860-6f6f3e5a7caa",
+      "descripcion": null,
+      "configuracion": null
+    },
+    {
+      "id": "01a0361c-5a40-7b6d-9a1e-5bada53a33cb",
+      "nombre": "Publicaciones en redes sociales",
+      "slug": "redes_sociales",
+      "activo": true,
+      "orden": 1,
+      "area": "01a0361b-d5e0-725d-8095-34e1d9254db3",
+      "descripcion": null,
+      "configuracion": null
+    },
+    {
+      "id": "01a0361c-5a40-7a48-a0c8-07574554a7b0",
+      "nombre": "Certificado",
+      "slug": "certificado",
+      "activo": true,
+      "orden": 3,
+      "area": "01a0361b-d5dc-711d-8783-a6655d063226",
+      "descripcion": null,
+      "configuracion": null
+    }
+  ]
+}
+

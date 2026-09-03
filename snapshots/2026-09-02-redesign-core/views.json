@@ -1,0 +1,589 @@
+{
+  "wewebTableViews": [
+    {
+      "id": "7d540266-f62e-4ebc-a6e5-1ab7daad9997",
+      "name": "vw_servicios_gestion",
+      "parameters": [
+        {
+          "name": "pedido_visible",
+          "type": "text",
+          "value": {
+            "code": "return variables['e43c5534-1ba8-41be-9281-685a25b2d567']?.['pedido_visible'] || ''",
+            "__wwtype": "js",
+            "defaultValue": ""
+          }
+        },
+        {
+          "name": "area_id",
+          "type": "text",
+          "value": {
+            "code": "return variables['e43c5534-1ba8-41be-9281-685a25b2d567']?.['area_id'] || ''",
+            "__wwtype": "js",
+            "defaultValue": ""
+          }
+        },
+        {
+          "name": "tipo_servicio_id",
+          "type": "text",
+          "value": {
+            "code": "return variables['e43c5534-1ba8-41be-9281-685a25b2d567']?.['tipo_servicio_id'] || ''",
+            "__wwtype": "js",
+            "defaultValue": ""
+          }
+        },
+        {
+          "name": "fecha_desde",
+          "type": "text",
+          "value": {
+            "code": "return variables['e43c5534-1ba8-41be-9281-685a25b2d567']?.['fecha_desde'] || ''",
+            "__wwtype": "js",
+            "defaultValue": ""
+          }
+        },
+        {
+          "name": "fecha_hasta",
+          "type": "text",
+          "value": {
+            "code": "return variables['e43c5534-1ba8-41be-9281-685a25b2d567']?.['fecha_hasta'] || ''",
+            "__wwtype": "js",
+            "defaultValue": ""
+          }
+        },
+        {
+          "name": "estado",
+          "type": "text",
+          "value": {
+            "code": "return variables['e43c5534-1ba8-41be-9281-685a25b2d567']?.['estado'] || ''",
+            "__wwtype": "js",
+            "defaultValue": ""
+          }
+        },
+        {
+          "name": "responsable_id",
+          "type": "text",
+          "value": {
+            "code": "return variables['e43c5534-1ba8-41be-9281-685a25b2d567']?.['responsable_id'] || ''",
+            "__wwtype": "js",
+            "defaultValue": ""
+          }
+        },
+        {
+          "name": "solicitante",
+          "type": "text",
+          "value": {
+            "code": "return variables['e43c5534-1ba8-41be-9281-685a25b2d567']?.['solicitante'] || ''",
+            "__wwtype": "js",
+            "defaultValue": ""
+          }
+        }
+      ],
+      "security": {
+        "accessRule": "authenticated",
+        "accessRoles": [
+          "equipo_interno",
+          "admin"
+        ],
+        "accessMiddlewares": [],
+        "accessRolesCondition": "OR"
+      },
+      "config": {
+        "sort": [
+          {
+            "key": "createdAt",
+            "direction": "DESC"
+          }
+        ],
+        "limit": 100,
+        "table": "servicios_solicitados",
+        "columns": {
+          "id": true,
+          "estado": true,
+          "createdAt": true,
+          "area__areas": {
+            "$alias": "area",
+            "$value": {
+              "id": true,
+              "slug": true,
+              "nombre": true
+            }
+          },
+          "responsable": true,
+          "pedido__pedidos": {
+            "$alias": "pedido",
+            "$value": {
+              "id": true,
+              "createdAt": true,
+              "pedido_visible": true,
+              "nombre_apellido": true,
+              "area_solicitante": true
+            }
+          },
+          "tipo_servicio__tipos_servicio": {
+            "$alias": "tipo_servicio",
+            "$value": {
+              "id": true,
+              "slug": true,
+              "nombre": true
+            }
+          }
+        },
+        "filters": {
+          "link": "$and",
+          "conditions": [
+            {
+              "field": [
+                "pedido__pedidos",
+                "pedido_visible"
+              ],
+              "value": {
+                "code": "return context.parameters['pedido_visible']",
+                "__wwtype": "js"
+              },
+              "operator": "$iLike:contains",
+              "isEmptyIgnored": true
+            },
+            {
+              "field": "area",
+              "value": {
+                "code": "return context.parameters['area_id']",
+                "__wwtype": "js"
+              },
+              "operator": "$eq",
+              "isEmptyIgnored": true
+            },
+            {
+              "field": "tipo_servicio",
+              "value": {
+                "code": "return context.parameters['tipo_servicio_id']",
+                "__wwtype": "js"
+              },
+              "operator": "$eq",
+              "isEmptyIgnored": true
+            },
+            {
+              "field": "createdAt",
+              "value": {
+                "code": "return context.parameters['fecha_desde']",
+                "__wwtype": "js"
+              },
+              "operator": "$gte",
+              "isEmptyIgnored": true
+            },
+            {
+              "field": "createdAt",
+              "value": {
+                "code": "return context.parameters['fecha_hasta']",
+                "__wwtype": "js"
+              },
+              "operator": "$lte",
+              "isEmptyIgnored": true
+            },
+            {
+              "field": "estado",
+              "value": {
+                "code": "return context.parameters['estado']",
+                "__wwtype": "js"
+              },
+              "operator": "$eq",
+              "isEmptyIgnored": true
+            },
+            {
+              "field": "responsable",
+              "value": {
+                "code": "return context.parameters['responsable_id']",
+                "__wwtype": "js"
+              },
+              "operator": "$eq",
+              "isEmptyIgnored": true
+            },
+            {
+              "field": [
+                "pedido__pedidos",
+                "nombre_apellido"
+              ],
+              "value": {
+                "code": "return context.parameters['solicitante']",
+                "__wwtype": "js"
+              },
+              "operator": "$iLike:contains",
+              "isEmptyIgnored": true
+            }
+          ]
+        },
+        "includes": [
+          {
+            "on": {
+              "left": "pedido",
+              "right": "id"
+            },
+            "many": false,
+            "path": [
+              "pedido__pedidos"
+            ],
+            "table": "pedidos",
+            "schema": "public",
+            "joinType": "left"
+          },
+          {
+            "on": {
+              "left": "area",
+              "right": "id"
+            },
+            "many": false,
+            "path": [
+              "area__areas"
+            ],
+            "table": "areas",
+            "schema": "public",
+            "joinType": "left"
+          },
+          {
+            "on": {
+              "left": "tipo_servicio",
+              "right": "id"
+            },
+            "many": false,
+            "path": [
+              "tipo_servicio__tipos_servicio"
+            ],
+            "table": "tipos_servicio",
+            "schema": "public",
+            "joinType": "left"
+          }
+        ]
+      },
+      "description": "Vista interna paginada para gestionar servicios solicitados, con datos mínimos del pedido, área y tipo de servicio. Excluye información específica, observaciones internas y campos de Notion."
+    },
+    {
+      "id": "3727d8c2-f41d-4b67-9a6c-07a6d34abd59",
+      "name": "vw_areas_activas",
+      "parameters": [],
+      "security": {
+        "accessRule": "public",
+        "accessRoles": [],
+        "accessMiddlewares": [],
+        "accessRolesCondition": "OR"
+      },
+      "config": {
+        "sort": [
+          {
+            "key": "orden",
+            "direction": "ASC"
+          }
+        ],
+        "limit": 100,
+        "table": "areas",
+        "columns": {
+          "id": true,
+          "slug": true,
+          "orden": true,
+          "nombre": true,
+          "descripcion": true
+        },
+        "filters": {
+          "link": "$and",
+          "conditions": [
+            {
+              "field": "activo",
+              "value": true,
+              "operator": "$eq"
+            }
+          ]
+        }
+      },
+      "description": "Catálogo de áreas activas, ordenadas para la futura Interface de PEDIDOS."
+    },
+    {
+      "id": "81d107b4-a6a0-407e-9295-360635e82f5a",
+      "name": "vw_tipos_servicio_activos",
+      "parameters": [],
+      "security": {
+        "accessRule": "public",
+        "accessRoles": [],
+        "accessMiddlewares": [],
+        "accessRolesCondition": "OR"
+      },
+      "config": {
+        "sort": [
+          {
+            "key": "orden",
+            "direction": "ASC"
+          }
+        ],
+        "limit": 200,
+        "table": "tipos_servicio",
+        "columns": {
+          "id": true,
+          "slug": true,
+          "orden": true,
+          "nombre": true,
+          "area__areas": {
+            "$alias": "area",
+            "$value": {
+              "id": true,
+              "slug": true,
+              "nombre": true
+            }
+          },
+          "descripcion": true,
+          "configuracion": true
+        },
+        "filters": {
+          "link": "$and",
+          "conditions": [
+            {
+              "field": "activo",
+              "value": true,
+              "operator": "$eq"
+            }
+          ]
+        },
+        "includes": [
+          {
+            "on": {
+              "left": "area",
+              "right": "id"
+            },
+            "many": false,
+            "path": [
+              "area__areas"
+            ],
+            "table": "areas",
+            "schema": "public",
+            "joinType": "left"
+          }
+        ]
+      },
+      "description": "Catálogo de tipos de servicio activos, ordenado e incluyendo la identificación y datos visibles del área relacionada."
+    },
+    {
+      "id": "27c793f8-2fc0-48d2-9b27-ea2c6912f88d",
+      "name": "vw_pedido_detalle_interno",
+      "parameters": [
+        {
+          "name": "pedido_id",
+          "type": "text",
+          "value": {
+            "code": "return variables['f063acb8-3eeb-47f6-b25d-3bce523561a4'] || globalContext.pageParameters?.pedidoid || ''",
+            "__wwtype": "js",
+            "defaultValue": ""
+          }
+        },
+        {
+          "name": "pedido_visible",
+          "type": "text",
+          "value": ""
+        }
+      ],
+      "security": {
+        "accessRule": "authenticated",
+        "accessRoles": [
+          "equipo_interno",
+          "admin"
+        ],
+        "accessMiddlewares": [],
+        "accessRolesCondition": "OR"
+      },
+      "config": {
+        "sort": [
+          {
+            "key": "createdAt",
+            "direction": "ASC"
+          }
+        ],
+        "limit": 100,
+        "table": "servicios_solicitados",
+        "columns": {
+          "id": true,
+          "estado": true,
+          "createdAt": true,
+          "updatedAt": true,
+          "area__areas": {
+            "$alias": "area",
+            "$value": {
+              "id": true,
+              "slug": true,
+              "nombre": true
+            }
+          },
+          "responsable": true,
+          "pedido__pedidos": {
+            "$alias": "pedido",
+            "$value": {
+              "id": true,
+              "correo": true,
+              "telefono": true,
+              "createdAt": true,
+              "tipos_pedido": true,
+              "estado_general": true,
+              "pedido_visible": true,
+              "nombre_apellido": true,
+              "area_solicitante": true
+            }
+          },
+          "informacion_especifica": true,
+          "observaciones_internas": true,
+          "tipo_servicio__tipos_servicio": {
+            "$alias": "tipo_servicio",
+            "$value": {
+              "id": true,
+              "slug": true,
+              "nombre": true
+            }
+          }
+        },
+        "filters": {
+          "link": "$or",
+          "conditions": [
+            {
+              "field": "pedido",
+              "value": {
+                "code": "return context.parameters['pedido_id']",
+                "__wwtype": "js"
+              },
+              "operator": "$eq",
+              "isEmptyIgnored": true
+            },
+            {
+              "field": [
+                "pedido__pedidos",
+                "pedido_visible"
+              ],
+              "value": {
+                "code": "return context.parameters['pedido_visible']",
+                "__wwtype": "js"
+              },
+              "operator": "$eq",
+              "isEmptyIgnored": true
+            }
+          ]
+        },
+        "includes": [
+          {
+            "on": {
+              "left": "pedido",
+              "right": "id"
+            },
+            "many": false,
+            "path": [
+              "pedido__pedidos"
+            ],
+            "table": "pedidos",
+            "schema": "public",
+            "joinType": "left"
+          },
+          {
+            "on": {
+              "left": "area",
+              "right": "id"
+            },
+            "many": false,
+            "path": [
+              "area__areas"
+            ],
+            "table": "areas",
+            "schema": "public",
+            "joinType": "left"
+          },
+          {
+            "on": {
+              "left": "tipo_servicio",
+              "right": "id"
+            },
+            "many": false,
+            "path": [
+              "tipo_servicio__tipos_servicio"
+            ],
+            "table": "tipos_servicio",
+            "schema": "public",
+            "joinType": "left"
+          }
+        ]
+      },
+      "description": "Vista interna de detalle por servicio con cabecera relacionada del pedido. Incluye información específica y observaciones internas; excluye archivos y campos de Notion."
+    },
+    {
+      "id": "1f8b1a74-b80f-44bc-9027-a25a54da3186",
+      "name": "vw_archivos_pedido_interno",
+      "parameters": [
+        {
+          "name": "pedido_id",
+          "type": "text",
+          "value": {
+            "code": "return variables['f063acb8-3eeb-47f6-b25d-3bce523561a4'] || globalContext.pageParameters?.pedidoid || ''",
+            "__wwtype": "js",
+            "defaultValue": ""
+          }
+        }
+      ],
+      "security": {
+        "accessRule": "authenticated",
+        "accessRoles": [
+          "equipo_interno",
+          "admin"
+        ],
+        "accessMiddlewares": [],
+        "accessRolesCondition": "OR"
+      },
+      "config": {
+        "sort": [
+          {
+            "key": "createdAt",
+            "direction": "ASC"
+          }
+        ],
+        "limit": 200,
+        "table": "archivos",
+        "columns": {
+          "id": true,
+          "categoria": true,
+          "createdAt": true,
+          "mime_type": true,
+          "size_bytes": true,
+          "nombre_original": true,
+          "servicio__servicios_solicitados": {
+            "$alias": "servicio",
+            "$value": {
+              "id": true
+            }
+          }
+        },
+        "filters": {
+          "link": "$and",
+          "conditions": [
+            {
+              "field": [
+                "servicio__servicios_solicitados",
+                "pedido"
+              ],
+              "value": {
+                "code": "return context.parameters['pedido_id']",
+                "__wwtype": "js"
+              },
+              "operator": "$eq",
+              "isEmptyIgnored": false
+            }
+          ]
+        },
+        "includes": [
+          {
+            "on": {
+              "left": "servicio",
+              "right": "id"
+            },
+            "many": false,
+            "path": [
+              "servicio__servicios_solicitados"
+            ],
+            "table": "servicios_solicitados",
+            "schema": "public",
+            "joinType": "left"
+          }
+        ]
+      },
+      "description": "Vista interna de metadata de archivos privados por pedido. Expone solo metadata segura y el id del servicio; nunca storage_path, archivo ni URLs."
+    }
+  ],
+  "integrationTableViews": []
+}
+

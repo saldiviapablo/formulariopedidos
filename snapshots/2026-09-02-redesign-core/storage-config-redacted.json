@@ -1,0 +1,113 @@
+{
+  "snapshot": "2026-09-02-redesign-core",
+  "environment": "Editor environment",
+  "wewebStorageInstalled": true,
+  "publicStorageAvailable": true,
+  "privateStorageAvailable": true,
+  "filesEnumerated": false,
+  "filesExported": false,
+  "environmentVariables": [
+    {
+      "name": "AUTH_SECRET",
+      "secure": true,
+      "values": "[REDACTED]",
+      "configured": {
+        "editor": true,
+        "staging": "[REDACTED]",
+        "production": "[REDACTED]"
+      }
+    },
+    {
+      "name": "DATABASE_URL",
+      "secure": true,
+      "values": "[REDACTED]",
+      "configured": {
+        "editor": true,
+        "staging": "[REDACTED]",
+        "production": "[REDACTED]"
+      }
+    },
+    {
+      "name": "PROVIDER_EMAIL_DISABLE_SIGNUP",
+      "secure": false,
+      "values": "[REDACTED]",
+      "configured": {
+        "editor": true,
+        "staging": "[REDACTED]",
+        "production": "[REDACTED]"
+      }
+    },
+    {
+      "name": "PROVIDER_EMAIL_ENABLED",
+      "secure": false,
+      "values": "[REDACTED]",
+      "configured": {
+        "editor": true,
+        "staging": "[REDACTED]",
+        "production": "[REDACTED]"
+      }
+    },
+    {
+      "name": "PROVIDER_EMAIL_PASSWORD_MIN_LENGTH",
+      "secure": false,
+      "values": "[REDACTED]",
+      "configured": {
+        "editor": true,
+        "staging": "[REDACTED]",
+        "production": "[REDACTED]"
+      }
+    },
+    {
+      "name": "PROVIDER_EMAIL_RESET_PASSWORD_TOKEN_EXPIRES_IN",
+      "secure": false,
+      "values": "[REDACTED]",
+      "configured": {
+        "editor": true,
+        "staging": "[REDACTED]",
+        "production": "[REDACTED]"
+      }
+    },
+    {
+      "name": "PROVIDER_EMAIL_VERIFICATION_ENABLED",
+      "secure": false,
+      "values": "[REDACTED]",
+      "configured": {
+        "editor": true,
+        "staging": "[REDACTED]",
+        "production": "[REDACTED]"
+      }
+    },
+    {
+      "name": "WEWEB_EMAIL_API_KEY",
+      "secure": true,
+      "values": "[REDACTED]",
+      "configured": {
+        "editor": true,
+        "staging": "[REDACTED]",
+        "production": "[REDACTED]"
+      }
+    },
+    {
+      "name": "WEWEB_PROJECT_LOGS_SECRET",
+      "secure": true,
+      "values": "[REDACTED]",
+      "configured": {
+        "editor": true,
+        "staging": "[REDACTED]",
+        "production": "[REDACTED]"
+      }
+    },
+    {
+      "name": "WEWEB_PROJECT_SECRET",
+      "secure": true,
+      "values": "[REDACTED]",
+      "configured": {
+        "editor": true,
+        "staging": "[REDACTED]",
+        "production": "[REDACTED]"
+      }
+    }
+  ],
+  "redaction": "No se incluyen valores de variables, usuarios, rutas ni archivos privados."
+}
+

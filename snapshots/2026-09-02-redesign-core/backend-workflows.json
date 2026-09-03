@@ -1,0 +1,6 @@
+{
+  "snapshot": "2026-09-02-redesign-core",
+  "note": "No hay backend workflows autónomos adicionales; los workflows backend disponibles son endpoints documentados en backend-endpoints.json.",
+  "workflows": []
+}
+

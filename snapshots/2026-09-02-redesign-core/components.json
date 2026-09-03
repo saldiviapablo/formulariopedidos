@@ -1,0 +1,4 @@
+{
+  "result": "[4]:\n  - uid: 95b160ec-a54a-4716-a254-47f50266019d\n    name: FormInvitacion\n    type: nocode\n    props[2]{name,type}:\n      Service slug,Text\n      Variante,TextSelect\n  - uid: 106cca8e-aea9-4fb2-92a3-84bae0aeec99\n    name: StatusBadge\n    type: nocode\n    props[1]{name,type}:\n      Estado,Text\n  - uid: ca5c5b7b-6f87-41d6-922a-60ea3d020217\n    name: EmptyState\n    type: nocode\n    props[1]{name,type}:\n      Mensaje,Text\n  - uid: 6d13f0ef-1650-460a-a0a7-a487fd59f8af\n    name: FileUploader\n    type: nocode\n    props[11]{name,type}:\n      Máximo de archivos,Number\n      Extensiones,Text\n      Múltiple,OnOff\n      Máximo por archivo (MB),Number\n      Area ID,Text\n      Submission token,Text\n      Etiqueta,Text\n      Obligatorio,OnOff\n      Service key,Text\n      Tipo servicio ID,Text\n      Categoría,TextSelect"
+}
+

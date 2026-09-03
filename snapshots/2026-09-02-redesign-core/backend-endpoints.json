@@ -1,0 +1,191 @@
+[
+  {
+    "id": "ec935c4c-4c71-4d1a-9ea5-fecc8b908312",
+    "name": "api_actualizar_servicio",
+    "parameters": [
+      {
+        "key": "payload",
+        "name": "payload",
+        "type": "object"
+      }
+    ],
+    "folder": null,
+    "description": "Actualiza exclusivamente estado, responsable y observaciones internas de un servicio, valida responsables internos y refresca updatedAt; acceso restringido al equipo interno.",
+    "meta": {
+      "path": "/servicios/actualizar",
+      "method": "PATCH",
+      "security": {
+        "accessRule": "authenticated",
+        "accessRoles": [
+          "equipo_interno",
+          "admin"
+        ],
+        "accessMiddlewares": [],
+        "accessRolesCondition": "OR"
+      }
+    },
+    "trigger": "ww-api"
+  },
+  {
+    "id": "819b8329-94b8-4a7d-929f-ce7a477c9161",
+    "name": "api_crear_pedido_completo",
+    "parameters": [
+      {
+        "key": "payload",
+        "name": "payload",
+        "type": "object"
+      }
+    ],
+    "folder": null,
+    "description": "Crea atómicamente un PED por cada servicio del rediseño core, con numeración consecutiva, idempotencia por token base y archivos privados.",
+    "meta": {
+      "path": "/pedidos/crear-completo",
+      "method": "POST",
+      "security": {
+        "accessRule": "public",
+        "accessRoles": [],
+        "accessMiddlewares": [],
+        "accessRolesCondition": "OR"
+      }
+    },
+    "trigger": "ww-api"
+  },
+  {
+    "id": "dac4f443-97ed-4825-9727-e060ce9973e9",
+    "name": "api_delete_temp_file",
+    "parameters": [
+      {
+        "key": "submission_token",
+        "name": "submission_token",
+        "type": "string"
+      },
+      {
+        "key": "service_key",
+        "name": "service_key",
+        "type": "string"
+      },
+      {
+        "key": "categoria",
+        "name": "categoria",
+        "type": "string"
+      },
+      {
+        "key": "path",
+        "name": "path",
+        "type": "string"
+      }
+    ],
+    "folder": null,
+    "description": "Elimina de Storage Private una carga temporal limitada estrictamente a su submission token, servicio y categoría.",
+    "meta": {
+      "path": "/archivos/temporal",
+      "method": "DELETE",
+      "security": {
+        "accessRule": "public",
+        "accessRoles": [],
+        "accessMiddlewares": [],
+        "accessRolesCondition": "OR"
+      }
+    },
+    "trigger": "ww-api"
+  },
+  {
+    "id": "9b59d32a-6460-4911-a64a-84e753b7b684",
+    "name": "api_get_signed_file_url",
+    "parameters": [
+      {
+        "key": "archivo_id",
+        "name": "archivo_id",
+        "type": "string"
+      }
+    ],
+    "folder": null,
+    "description": "Genera una URL temporal para un archivo privado persistido, exclusivamente para equipo interno y administradores.",
+    "meta": {
+      "path": "/archivos/signed-url",
+      "method": "POST",
+      "security": {
+        "accessRule": "authenticated",
+        "accessRoles": [
+          "equipo_interno",
+          "admin"
+        ],
+        "accessMiddlewares": [],
+        "accessRolesCondition": "OR"
+      }
+    },
+    "trigger": "ww-api"
+  },
+  {
+    "id": "565645b9-79e5-4981-bdd4-763cf076601b",
+    "name": "api_listar_responsables",
+    "parameters": [],
+    "folder": null,
+    "description": "Lista de forma segura únicamente usuarios de WeWeb Auth con rol equipo_interno o admin, exponiendo solo id, nombre visible y email.",
+    "meta": {
+      "path": "/responsables/listar",
+      "method": "GET",
+      "security": {
+        "accessRule": "authenticated",
+        "accessRoles": [
+          "equipo_interno",
+          "admin"
+        ],
+        "accessMiddlewares": [],
+        "accessRolesCondition": "OR"
+      }
+    },
+    "trigger": "ww-api"
+  },
+  {
+    "id": "14ac2d2c-b770-4eb8-a9ec-e0df78d5884d",
+    "name": "api_upload_archivo",
+    "parameters": [
+      {
+        "key": "file",
+        "name": "file",
+        "type": "file",
+        "multiple": true
+      },
+      {
+        "key": "submission_token",
+        "name": "submission_token",
+        "type": "string"
+      },
+      {
+        "key": "area_id",
+        "name": "area_id",
+        "type": "string"
+      },
+      {
+        "key": "tipo_servicio_id",
+        "name": "tipo_servicio_id",
+        "type": "string"
+      },
+      {
+        "key": "service_key",
+        "name": "service_key",
+        "type": "string"
+      },
+      {
+        "key": "categoria",
+        "name": "categoria",
+        "type": "string"
+      }
+    ],
+    "folder": null,
+    "description": "Carga uno o varios archivos validados de los formularios core en WeWeb Storage Private y devuelve referencias para la creación atómica.",
+    "meta": {
+      "path": "/archivos/subir",
+      "method": "POST",
+      "security": {
+        "accessRule": "public",
+        "accessRoles": [],
+        "accessMiddlewares": [],
+        "accessRolesCondition": "OR"
+      }
+    },
+    "trigger": "ww-api"
+  }
+]
+
