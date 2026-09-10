@@ -9,61 +9,67 @@
 ## 1. Proveedor de Autenticación y Arquitectura de Sesión
 
 El sistema utiliza el plugin nativo **WeWeb Auth Plugin (`plugin-auth`)** conectado a la base de datos PostgreSQL interna (`auth.users`).
-- **Mecanismo de Sesión:** Token JWT emitido al autenticarse en `/login`, almacenado en cookie segura (`SameSite=Lax`).
+- **Mecanismo de Sesión:** Token JWT emitido al autenticarse en `/login`, almacenado en cookie segura (`SameSite=Lax`). `[CONFIG-VERIFICADO]`
 - **Expiración de Sesión:** 7 días con renovación automática.
 
 ---
 
-## 2. Matriz de Roles y Permisos (RBAC)
+## 2. Distinción entre ROL y ESTADO_ACCESO
 
-El sistema define formalmente dos roles internos:
-1. `admin` (Administrador General del Sistema).
-2. `equipo_interno` (Operador / Diseñador / Redactor de la Secretaría).
-3. *(Anónimo / Solicitante: usuarios públicos sin autenticación).*
+Es fundamental separar dos conceptos independientes en el modelo de seguridad: `[CONFIG-VERIFICADO]`
 
-| Recurso / Funcionalidad | Anónimo | `equipo_interno` | `admin` |
-|---|---|---|---|
-| Cargar Nueva Solicitud (`/`) | Sí | Sí | Sí |
-| Ver Confirmación (`/solicitud-recibida`) | Sí (con token) | Sí | Sí |
-| Consultar Seguimiento (`/seguimiento`) | Sí (con PED/token) | Sí | Sí |
-| Responder Solicitud Info (`/solicitud-informacion`) | Sí (con token válido) | Sí | Sí |
-| Registrar Solicitud de Acceso (`/solicitar-acceso`) | Sí | No (redirige) | No (redirige) |
-| Iniciar Sesión (`/login`) | Sí | No (redirige) | No (redirige) |
-| Bandeja de Gestión (`/gestion`) | **No (401)** | **Sí** | **Sí** |
-| Ver Detalle de Pedido (`/pedido/:id`) | **No (401)** | **Sí** | **Sí** |
-| Cambiar Estado de Servicio | **No (401)** | **Sí** | **Sí** |
-| Asignar Responsable de Servicio | **No (401)** | **Sí** | **Sí** |
-| Solicitar Información Faltante | **No (401)** | **Sí** | **Sí** |
-| Cargar Entrega Final y Finalizar | **No (401)** | **Sí** | **Sí** |
-| Panel de Administración de Usuarios (`/usuarios`) | **No (401)** | **No (403)** | **Sí** |
-| Aprobar / Rechazar Usuarios Nuevos | **No** | **No** | **Sí** |
-| Modificar `nombre_usuario` de Operadores | **No** | **No** | **Sí** |
-| Reasignar Rol (`admin` / `equipo_interno`) | **No** | **No** | **Sí** |
+1. **ROL (WeWeb Auth Plugin):** Determina qué páginas y recursos puede ver el usuario si su sesión es válida.
+   - `admin`: Acceso total (incluye `/usuarios`).
+   - `equipo_interno`: Acceso a bandeja `/gestion` y detalle `/pedido/:id`.
+   - `anonimo`: Solo páginas públicas.
+2. **ESTADO_ACCESO (`usuarios_acceso.estado_acceso`):** Determina si la cuenta está habilitada operativamente en la base de datos.
+   - `pendiente`: Cuenta registrada recientemente; espera aprobación de un administrador.
+   - `aprobado`: Cuenta validada; sus datos se exponen en selectores de responsables.
+   - `revocado`: Cuenta deshabilitada.
 
 ---
 
-## 3. El Nuevo Modelo de Identidad (`nombre_usuario`)
+## 3. Matriz de Roles y Permisos (RBAC)
 
-Para desacoplar los emails privados y nombres personales de los operadores, se implementó el campo `nombre_usuario` en la tabla `usuarios_acceso`:
-- **Restricciones:**
-  - Longitud: 2 a 30 caracteres.
-  - Caracteres permitidos: Letras minúsculas (`a-z`), números (`0-9`), puntos (`.`), guiones bajos (`_`), y guiones medios (`-`).
-  - Normalización: Automática mediante `LOWER(TRIM(input))` antes de INSERT o UPDATE.
-  - Constraint: `UNIQUE` en base de datos.
-- **Uso en Interfaz:**
-  - Es el único identificador visible en el selector de Responsables de `/gestion` y `/pedido/:id`.
-
----
-
-## 4. Estado de Usuarios en Producción
-
-| Email de Cuenta | Rol WeWeb Auth | `nombre_usuario` | `estado_acceso` | Estado de Auditoría |
+| Recurso / Funcionalidad | Anónimo | `equipo_interno` | `admin` | Evidencia |
 |---|---|---|---|---|
-| `test@gmail.com` | `admin` | `23` | `aprobado` | `[PROD-VERIFICADO]` Administrador Inicial |
-| `pablosaldiviainfo@gmail.com` | `equipo_interno` | `22` | `aprobado` | `[PROD-VERIFICADO]` Operador Interno |
-| `pablo2003_87@hotmail.com` | `equipo_interno` | `21` | `aprobado` | `[PROD-VERIFICADO]` Operador Interno |
+| Cargar Nueva Solicitud (`/`) | Sí | Sí | Sí | `[PROD-VERIFICADO]` |
+| Ver Confirmación (`/solicitud-recibida`) | Sí (con token) | Sí | Sí | `[PROD-VERIFICADO]` |
+| Consultar Seguimiento (`/seguimiento`) | Sí (con PED/token) | Sí | Sí | `[PROD-VERIFICADO]` |
+| Responder Solicitud Info (`/solicitud-informacion`) | Sí (con token válido) | Sí | Sí | `[PROD-VERIFICADO]` |
+| Registrar Solicitud de Acceso (`/solicitar-acceso`) | Sí | No (redirige) | No (redirige) | `[PROD-VERIFICADO]` |
+| Iniciar Sesión (`/login`) | Sí | No (redirige) | No (redirige) | `[PROD-VERIFICADO]` |
+| Bandeja de Gestión (`/gestion`) | **No (401)** | **Sí** | **Sí** | `[WEWEB-VERIFICADO]` |
+| Ver Detalle de Pedido (`/pedido/:id`) | **No (401)** | **Sí** | **Sí** | `[WEWEB-VERIFICADO]` |
+| Cambiar Estado de Servicio | **No (401)** | **Sí** | **Sí** | `[CONFIG-VERIFICADO]` |
+| Asignar Responsable de Servicio | **No (401)** | **Sí** | **Sí** | `[CONFIG-VERIFICADO]` |
+| Solicitar Información Faltante | **No (401)** | **Sí** | **Sí** | `[CONFIG-VERIFICADO]` |
+| Cargar Entrega Final y Finalizar | **No (401)** | **Sí** | **Sí** | `[CONFIG-VERIFICADO]` |
+| Panel de Administración de Usuarios (`/usuarios`) | **No (401)** | **No (403)** | **Sí** | `[WEWEB-VERIFICADO]` |
+| Aprobar / Rechazar Usuarios Nuevos | **No** | **No** | **Sí** | `[CONFIG-VERIFICADO]` |
+| Modificar `nombre_usuario` de Operadores | **No** | **No** | **Sí** | `[CONFIG-VERIFICADO]` |
 
 ---
 
-## 5. Evidencia de Verificación
-- `[PROD-VERIFICADO]`: Usuarios, roles y accesos confirmados en la base de datos de producción y Auth Plugin.
+## 4. El Nuevo Modelo de Identidad (`nombre_usuario`)
+
+Para desacoplar los correos electrónicos privados y nombres personales de los operadores en las interfaces públicas e internas:
+- **Restricciones:** 2 a 30 caracteres, minúsculas (`a-z`), números (`0-9`), puntos (`.`), guiones (`_`, `-`). `[CONFIG-VERIFICADO]`
+- **Normalización:** `LOWER(TRIM(input))` obligatoria antes de persistir.
+- **Unicidad:** Restricción `UNIQUE` en base de datos.
+- **Uso en Interfaz:** Es el único identificador visualizado en los selectores de responsables de `/gestion` y `/pedido/:id`.
+
+---
+
+## 5. Cuentas y Roles Tipificados (Sanitizado)
+
+| Tipo de Cuenta | Rol WeWeb Auth | `estado_acceso` | Propósito |
+|---|---|---|---|
+| `admin@example.com` | `admin` | `aprobado` | Administrador general inicial del sistema. |
+| `operador1@example.com` | `equipo_interno` | `aprobado` | Operador / Diseñador del equipo interno. |
+| `operador2@example.com` | `equipo_interno` | `aprobado` | Redactor / Operador de prensa del equipo interno. |
+
+---
+
+## 6. Evidencia de Verificación
+- `[CONFIG-VERIFICADO]`: Esquema de `usuarios_acceso`, triggers y plugins de WeWeb Auth verificados.

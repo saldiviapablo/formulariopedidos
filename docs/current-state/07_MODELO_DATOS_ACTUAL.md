@@ -8,28 +8,28 @@
 
 ## 1. Inventario de Tablas en WeWeb Tables
 
-El sistema opera sobre **10 tablas relacionales** en PostgreSQL gestionadas a través de WeWeb Tables:
+El sistema opera sobre **10 tablas relacionales** en PostgreSQL: `[CONFIG-VERIFICADO]`
 
-| # | Nombre de Tabla | UID Tabla WeWeb | Cantidad Columnas | Descripción de Entidad |
+| # | Nombre de Tabla | Cantidad Columnas | Clave Primaria (PK) | Función / Entidad |
 |---|---|---|---|---|
-| 1 | `pedidos` | `9b5d2757-1234-4567-8901-pedidos000001` | 15 | Cabecera de solicitudes de los usuarios |
-| 2 | `servicios_solicitados` | `9b5d2757-1234-4567-8901-servicios00002` | 13 | Líneas de detalle / servicios por pedido |
-| 3 | `solicitudes_informacion` | `9b5d2757-1234-4567-8901-solinfo0000003` | 10 | Solicitudes de información complementaria |
-| 4 | `comunicaciones_pedido` | `9b5d2757-1234-4567-8901-comunic0000004` | 12 | Log de auditoría de correos y webhooks |
-| 5 | `archivos` | `9b5d2757-1234-4567-8901-archivos000005` | 10 | Metadatos y paths de archivos subidos |
-| 6 | `secuencias` | `9b5d2757-1234-4567-8901-secuenc0000006` | 4 | Generador atómico de numeración `PED` |
-| 7 | `usuarios_acceso` | `9b5d2757-1234-4567-8901-usracc00000007` | 11 | Perfiles de operadores y estado de aprobación |
-| 8 | `areas` | `9b5d2757-1234-4567-8901-areas000000008` | 7 | Áreas de la Secretaría (Diseño, Prensa, etc.) |
-| 9 | `tipos_servicio` | `9b5d2757-1234-4567-8901-tipserv0000009` | 8 | Tipos de servicios catalogados |
-| 10 | `configuracion` | `9b5d2757-1234-4567-8901-config00000010` | 5 | Parámetros globales del sistema |
+| 1 | `pedidos` | 15 | `id` (uuid) | Cabecera de la solicitud, solicitante y trazabilidad. |
+| 2 | `servicios_solicitados` | 13 | `id` (uuid) | Líneas de servicio asociadas a cada pedido. |
+| 3 | `solicitudes_informacion` | 10 | `id` (uuid) | Requerimientos de información complementaria con token hash. |
+| 4 | `comunicaciones_pedido` | 12 | `id` (uuid) | Auditoría de correos y webhooks despachados. |
+| 5 | `archivos` | 10 | `id` (uuid) | Metadatos y rutas de almacenamiento en Private Storage. |
+| 6 | `secuencias` | 4 | `id` (uuid) | Contador atómico para numeración `PED-YYYY-XXXXXX`. |
+| 7 | `usuarios_acceso` | 11 | `id` (uuid) | Perfiles de operadores internos y estado de aprobación. |
+| 8 | `areas` | 7 | `id` (uuid) | Catálogo de áreas de producción de la Secretaría. |
+| 9 | `tipos_servicio` | 8 | `id` (uuid) | Catálogo de tipos de servicios catalogados. |
+| 10 | `configuracion` | 5 | `id` (uuid) | Parámetros globales del sistema. |
 
 ---
 
-## 2. Diagrama Entidad-Relación Completo
+## 2. Diagrama Entidad-Relación y Regla del PED
 
 ```mermaid
 erDiagram
-    pedidos ||--o{ servicios_solicitados : "contiene"
+    pedidos ||--o{ servicios_solicitados : "1 pedido contiene N servicios"
     pedidos ||--o{ solicitudes_informacion : "posee"
     pedidos ||--o{ comunicaciones_pedido : "registra"
     pedidos ||--o{ archivos : "adjunta"
@@ -42,7 +42,7 @@ erDiagram
     servicios_solicitados ||--o{ comunicaciones_pedido : "asocia"
     servicios_solicitados ||--o{ archivos : "contiene"
     
-    usuarios_acceso }o--o{ servicios_solicitados : "responsable"
+    usuarios_acceso }o--o{ servicios_solicitados : "responsable asignado"
     usuarios_acceso }o--o{ comunicaciones_pedido : "remitente"
     
     secuencias {
@@ -52,11 +52,17 @@ erDiagram
     }
 ```
 
+### 2.1 Demostración de la Regla del PED: `[CONFIG-VERIFICADO]`
+- **Dónde reside el PED:** El campo `pedido_visible` (ej: `PED-2026-000101`) reside **exclusivamente en la tabla `pedidos`**.
+- **Generación:** Se genera atómicamente consultando la tabla `secuencias` (`clave = 'pedidos_YYYY'`).
+- **Relación con Servicios:** Una sumisión en el formulario crea **1 fila en `pedidos`** (con 1 número de PED) y **N filas en `servicios_solicitados`** vinculadas por la clave foránea `pedido = pedidos.id`.
+- **Aclaración frente a documentación histórica:** No existe un PED independiente por cada servicio; el PED identifica la solicitud general contenedora.
+
 ---
 
 ## 3. Esquemas de Columnas y DDL Detallado
 
-### 3.1 Tabla `pedidos`
+### 3.1 Tabla `pedidos` `[CONFIG-VERIFICADO]`
 - `id` (uuid, PK, default `gen_random_uuid()`)
 - `createdAt` (timestamptz, default `now()`)
 - `updatedAt` (timestamptz, default `now()`)
@@ -67,14 +73,14 @@ erDiagram
 - `telefono` (text, NOT NULL)
 - `correo` (text, NOT NULL)
 - `area_solicitante` (text, NOT NULL)
-- `tipos_pedido` (jsonb, array de strings de áreas)
+- `tipos_pedido` (jsonb, array de slugs de áreas)
 - `submission_token` (text, UNIQUE)
 - `notion_page_id` (text, nullable)
 - `notion_url` (text, nullable)
 - `notion_sync_status` (text, default `'pending'`)
 - `notion_last_sync_at` (timestamptz, nullable)
 
-### 3.2 Tabla `servicios_solicitados`
+### 3.2 Tabla `servicios_solicitados` `[CONFIG-VERIFICADO]`
 - `id` (uuid, PK)
 - `createdAt` (timestamptz, default `now()`)
 - `updatedAt` (timestamptz, default `now()`)
@@ -89,7 +95,7 @@ erDiagram
 - `producto_final_nota` (text, nullable)
 - `motivo_cancelacion` (text, nullable)
 
-### 3.3 Tabla `solicitudes_informacion`
+### 3.3 Tabla `solicitudes_informacion` `[CONFIG-VERIFICADO]`
 - `id` (uuid, PK)
 - `createdAt` (timestamptz, default `now()`)
 - `updatedAt` (timestamptz, default `now()`)
@@ -102,7 +108,7 @@ erDiagram
 - `responded_at` (timestamptz, nullable)
 - `respuesta_texto` (text, nullable)
 
-### 3.4 Tabla `comunicaciones_pedido`
+### 3.4 Tabla `comunicaciones_pedido` `[CONFIG-VERIFICADO]`
 - `id` (uuid, PK)
 - `createdAt` (timestamptz, default `now()`)
 - `pedido` (uuid, FK -> `pedidos.id`)
@@ -118,7 +124,7 @@ erDiagram
 - `enviado_por` (uuid, nullable)
 - `resultado` (text, nullable)
 
-### 3.5 Tabla `archivos`
+### 3.5 Tabla `archivos` `[CONFIG-VERIFICADO]`
 - `id` (uuid, PK)
 - `createdAt` (timestamptz, default `now()`)
 - `categoria` (text, NOT NULL)
@@ -131,13 +137,13 @@ erDiagram
 - `subido_por` (text, nullable)
 - `archivo` (text, nullable)
 
-### 3.6 Tabla `secuencias`
+### 3.6 Tabla `secuencias` `[CONFIG-VERIFICADO]`
 - `id` (uuid, PK)
 - `clave` (text, UNIQUE, ej: `'pedidos_2026'`)
 - `valor_actual` (double precision, default 0)
 - `updatedAt` (timestamptz, default `now()`)
 
-### 3.7 Tabla `usuarios_acceso`
+### 3.7 Tabla `usuarios_acceso` `[CONFIG-VERIFICADO]`
 - `id` (uuid, PK)
 - `createdAt` (timestamptz, default `now()`)
 - `updatedAt` (timestamptz, default `now()`)
@@ -154,4 +160,4 @@ erDiagram
 ---
 
 ## 4. Evidencia de Verificación
-- `[CONFIG-VERIFICADO]`: DDL y columnas extraídos directamente de WeWeb Tables metadata (`inspect_tables.py`).
+- `[CONFIG-VERIFICADO]`: DDL y columnas extraídos directamente de WeWeb Tables metadata.

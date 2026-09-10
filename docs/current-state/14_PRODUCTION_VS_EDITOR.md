@@ -8,22 +8,22 @@
 
 ## 1. Resumen Ejecutivo de Sincronización
 
-A la fecha de la auditoría (2026-09-10), existen discrepancias clave entre lo que está publicado y activo en **Producción** (`https://secretariamedios-production.weweb.io/`) y lo que está configurado en el borrador de **WeWeb Editor**:
+A la fecha de la auditoría (2026-09-10), existen diferencias verificables entre la versión publicada en **Producción** (`https://secretariamedios-production.weweb.io/`) y el borrador de trabajo en **WeWeb Editor**:
 
 ---
 
 ## 2. Matriz Comparativa Detallada
 
-| Componente / Recurso | Estado en Producción Live | Estado en WeWeb Editor Draft | Causa Técnica | Impacto Operativo |
-|---|---|---|---|---|
-| **Formulario `/solicitar-acceso`** | Muestra campos legados: `Nombre y apellido *`, `Email *`, `Password *`. | Muestra campos del nuevo modelo: `Nombre *`, `Apellido *`, `Usuario *`, `Email *`, `Password *`. | Falta de publicación del frontend draft. | Los usuarios nuevos en Prod registran nombre combinado en lugar de campos divididos. |
-| **Selector de Responsables (`/gestion`)** | Muestra `nombre_usuario` numérico (`21`, `22`, `23`). | Configurado para mostrar `nombre_usuario` como `label` y `user_id` como `value`. | **SINCRONIZADO EN BACKEND**: La query ya fue actualizada en backend. | El frontend en Prod ya consume el endpoint corregido. |
-| **Esquema de `usuarios_acceso`** | Columnas `nombre`, `apellido`, `nombre_usuario` creadas y pobladas. | Columnas `nombre`, `apellido`, `nombre_usuario` creadas y pobladas. | **SINCRONIZADO**: El schema DDL fue migrado y publicado. | Base de datos completamente consistente. |
-| **Rol de `test@gmail.com`** | `admin` | `admin` | **SINCRONIZADO**: Corregido en Auth. | Administrador general único inicial activo. |
-| **Rol de `drivegobtdf@gmail.com`** | Sin rol admin (o no activo). | `equipo_interno` | **SINCRONIZADO**: Desacoplado de privilegios admin. | Cumple regla de negocio estricta. |
+| Recurso / Componente | Producción (Live) | Editor Actual (Draft) | Diferencia | Impacto | Evidencia |
+|---|---|---|---|---|---|
+| **Formulario `/solicitar-acceso`** | Muestra campos legados: `Nombre y apellido *`, `Correo electrónico *`, `Contraseña *`, `Confirmar contraseña *`. | Muestra campos del nuevo modelo: `Nombre *`, `Apellido *`, `Usuario *`, `Correo electrónico *`, `Contraseña *`, `Confirmar contraseña *`. | Frontend draft no publicado a Production. | Los registros en Prod siguen enviando nombre combinado en vez de campos divididos. | `[PROD-VERIFICADO]` vs `[WEWEB-VERIFICADO]` |
+| **Selector de Responsables (`/gestion`)** | Muestra valores de `nombre_usuario` (ej: `21`, `22`, `23`). | Configurado con binding `label = nombre_usuario` y `value = user_id`. | **Sincronizado en Backend:** El backend workflow desplegado ya provee la query corregida. | El frontend en producción consume el endpoint sin exponer PII. | `[PROD-VERIFICADO]` vs `[CONFIG-VERIFICADO]` |
+| **Schema de `usuarios_acceso`** | Columnas `nombre`, `apellido`, `nombre_usuario` existentes y pobladas. | Columnas `nombre`, `apellido`, `nombre_usuario` existentes y pobladas. | **Sincronizado:** Migración DDL publicada y aplicada. | Estructura de base de datos consistente en ambos entornos. | `[CONFIG-VERIFICADO]` |
+| **Rol Administrador Inicial** | Cuenta designada con rol `admin`. | Cuenta designada con rol `admin`. | **Sincronizado:** Asignación en WeWeb Auth verificada. | Un único Administrador general inicial operativo. | `[CONFIG-VERIFICADO]` |
+| **Operadores Internos** | Cuentas operativas con rol `equipo_interno`. | Cuentas operativas con rol `equipo_interno`. | **Sincronizado:** Sin privilegios de administrador indebidos. | Cumplimiento de la regla de privilegios mínimos. | `[CONFIG-VERIFICADO]` |
 
 ---
 
 ## 3. Evidencia de Verificación
-- `[PROD-VERIFICADO]`: Captura y prueba directa contra el endpoint y frontend público de producción.
-- `[WEWEB-VERIFICADO]`: Inspección del árbol DOM en Pinia stores del Editor.
+- `[PROD-VERIFICADO]`: Pruebas de navegación e interacción contra el endpoint público en producción.
+- `[WEWEB-VERIFICADO]`: Inspección del DOM y de los stores de Pinia en WeWeb Editor.

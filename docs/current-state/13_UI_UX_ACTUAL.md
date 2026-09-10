@@ -8,14 +8,14 @@
 
 ## 1. Identidad Visual y Paleta de Colores
 
-La aplicación implementa la identidad visual institucional del Gobierno de Tierra del Fuego:
+La aplicación implementa la identidad visual institucional del Gobierno de Tierra del Fuego: `[WEWEB-VERIFICADO]`
 
 | Token / Nombre | Valor HEX / RGB | Uso Principal |
 |---|---|---|
 | **Azul Institucional (Primary)** | `#003366` / `#0B4F8A` | Botones principales, barras de navegación, títulos destacados. |
-| **Azul Secundario / Hover** | `#002244` | Hover de botones, estados activos de sidebar. |
-| **Gris Fondo (Background)** | `#F8F9FA` | Fondo general de páginas y aplicaciones. |
-| **Gris Tarjeta (Card/Surface)** | `#FFFFFF` | Contenedores de formularios, tarjetas de pedidos y modales. |
+| **Azul Secundario / Hover** | `#002244` | Hover de botones, estados activos de navegación. |
+| **Gris Fondo (Background)** | `#F8F9FA` | Fondo general de páginas y layouts. |
+| **Blanco Superficie (Surface)** | `#FFFFFF` | Contenedores de formularios, tarjetas de pedidos y modales. |
 | **Borde / Separador** | `#E5E7EB` | Bordes de inputs, tablas y divisiones de tabs. |
 | **Texto Principal** | `#1F2937` | Tipografía principal, etiquetas y encabezados. |
 | **Texto Secundario / Muted** | `#6B7280` | Textos de ayuda, timestamps y metadatos. |
@@ -26,28 +26,23 @@ La aplicación implementa la identidad visual institucional del Gobierno de Tier
 
 ---
 
-## 2. Tipografía y Componentes UI
+## 2. Tipografía y Componentes UI `[WEWEB-VERIFICADO]`
 
 - **Familia Tipográfica:** Inter / System UI Font Stack (`font-sans`).
-- **Escala Modular:**
-  - Encabezados H1: `text-2xl font-bold tracking-tight` (24px - 32px).
-  - Encabezados H2/H3: `text-lg font-semibold` (18px - 20px).
-  - Cuerpo / Inputs: `text-sm font-normal` (14px).
-  - Badges / Muted: `text-xs font-medium` (12px).
 - **Componentes Clave:**
-  - **Dropzone / Uploader:** Borde punteado con feedback visual en drag-over.
-  - **Badges de Estado:** Pills redondeadas con color de fondo pastel y texto sólido.
-  - **Tabs de Navegación:** Pestañas horizontales con indicador de borde inferior azul.
-  - **Modales:** Overlays oscurecidos (`backdrop-blur-sm bg-black/40`) con foco accesible.
+  - **Dropzone:** Borde punteado con feedback visual en drag-over.
+  - **Badges de Estado:** Pills redondeadas con color de fondo suave y texto contrastante.
+  - **Tabs de Navegación:** Pestañas horizontales con indicador activo azul.
+  - **Modales:** Overlays con backdrop oscurecido y foco accesible.
 
 ---
 
-## 3. Responsive Design
-- **Desktop (>= 1024px):** Layout en 2 o 3 columnas para Kanban y formulario con panel lateral de resumen.
-- **Tablet (768px - 1023px):** Kanban con scroll horizontal, formulario en columna única.
-- **Mobile (< 768px):** Formulario optimizado en ancho 100%, navegación colapsada en menú hamburguesa, botones en ancho completo.
+## 3. Responsive Design `[PROD-VERIFICADO]`
+- **Desktop (>= 1024px):** Layout estructurado en columnas con resumen lateral.
+- **Tablet (768px - 1023px):** Kanban con scroll horizontal, formularios en columna única.
+- **Mobile (< 768px):** Formularios al 100% de ancho, menú colapsado y botones de toque amplio.
 
 ---
 
 ## 4. Evidencia de Verificación
-- `[WEWEB-VERIFICADO]`: Clases CSS y tokens de Design System extraídos de `parse_design.py`.
+- `[WEWEB-VERIFICADO]`: Tokens de Design System extraídos de la configuración de WeWeb.
